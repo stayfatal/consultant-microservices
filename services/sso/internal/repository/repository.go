@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"cm/services/user/internal/interfaces"
+	"cm/services/sso/internal/interfaces"
 
 	"github.com/jmoiron/sqlx"
 )

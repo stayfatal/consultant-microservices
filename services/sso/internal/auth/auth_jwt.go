@@ -1,8 +1,8 @@
 package auth
 
 import (
+	"cm/services/sso/config"
 	"time"
-	"tma/services/account/config"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"

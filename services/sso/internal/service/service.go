@@ -1,6 +1,6 @@
 package service
 
-import "cm/services/user/internal/interfaces"
+import "cm/services/sso/internal/interfaces"
 
 type service struct {
 	repo *interfaces.Repository
