@@ -27,7 +27,7 @@ func CreateToken(id int) (string, error) {
 		},
 	})
 
-	f, err := os.Open("/home/stayfatal/go-projects/consultant-microservices/services/sso/config/private_key.pem")
+	f, err := os.Open("C:/Go-projects/consultant-microservices/services/sso/config/private_key.pem")
 	if err != nil {
 		return "", errors.Wrap(err, "opening private key file")
 	}
@@ -57,7 +57,7 @@ func ValidateToken(token string) (*Claims, error) {
 			return nil, errors.Wrap(UnknownSignMethodError, "checking sign method")
 		}
 
-		f, err := os.Open("/home/stayfatal/go-projects/consultant-microservices/services/public_key.pem")
+		f, err := os.Open("C:/Go-projects/consultant-microservices/services/public_key.pem")
 		if err != nil {
 			return "", errors.Wrap(err, "opening public key file")
 		}

@@ -10,7 +10,6 @@ type Config struct {
 	DBPassword string
 	DBName     string
 	DBSslMode  string
-	JWTSecret  []byte
 	Port       int
 }
 
@@ -26,7 +25,6 @@ func LoadConfig() (*Config, error) {
 		DBPassword: viper.GetString("DB_PASSWORD"),
 		DBName:     viper.GetString("DB_NAME"),
 		DBSslMode:  viper.GetString("DB_SSL_MODE"),
-		JWTSecret:  []byte(viper.GetString("JWT_SECRET")),
 		Port:       viper.GetInt("PORT"),
 	}
 

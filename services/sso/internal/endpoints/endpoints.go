@@ -24,7 +24,10 @@ func makeRegisterEndpoint(svc interfaces.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(models.RegisterRequest)
 		token, err := svc.Register(req.User)
-		return models.RegisterResponse{Token: token, Error: err.Error()}, err
+		if err != nil {
+			return models.RegisterResponse{Error: err.Error()}, err
+		}
+		return models.RegisterResponse{Token: token}, err
 	}
 }
 
@@ -32,6 +35,9 @@ func makeLoginEndpoint(svc interfaces.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(models.LoginRequest)
 		token, err := svc.Login(req.User)
-		return models.LoginResponse{Token: token, Error: err.Error()}, err
+		if err != nil {
+			return models.LoginResponse{Error: err.Error()}, err
+		}
+		return models.LoginResponse{Token: token}, err
 	}
 }
