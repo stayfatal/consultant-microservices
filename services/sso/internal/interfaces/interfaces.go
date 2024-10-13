@@ -8,8 +8,8 @@ import (
 )
 
 type Service interface {
-	Register()
-	Login()
+	Register(user models.User) (string, error)
+	Login(user models.User) (string, error)
 }
 
 type Repository interface {

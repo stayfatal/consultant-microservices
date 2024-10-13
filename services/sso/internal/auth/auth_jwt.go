@@ -1,7 +1,8 @@
 package auth
 
 import (
-	"cm/services/sso/config"
+	"io"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -19,14 +20,29 @@ type Claims struct {
 }
 
 func CreateToken(id int) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, Claims{
 		Id: id,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},
 	})
 
-	t, err := token.SignedString(config.Cfg.JWTSecret)
+	f, err := os.Open("/home/stayfatal/go-projects/consultant-microservices/services/sso/config/private_key.pem")
+	if err != nil {
+		return "", errors.Wrap(err, "opening private key file")
+	}
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return "", errors.Wrap(err, "reading private key file")
+	}
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(b)
+	if err != nil {
+		return "", errors.Wrap(err, "parsing private key file")
+	}
+
+	t, err := token.SignedString(privateKey)
 	if err != nil {
 		return "", errors.Wrap(err, "getting token")
 	}
@@ -37,11 +53,26 @@ func CreateToken(id int) (string, error) {
 func ValidateToken(token string) (*Claims, error) {
 	claims := &Claims{}
 	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, errors.Wrap(UnknownSignMethodError, "checking sign method")
 		}
 
-		return config.Cfg.JWTSecret, nil
+		f, err := os.Open("/home/stayfatal/go-projects/consultant-microservices/services/public_key.pem")
+		if err != nil {
+			return "", errors.Wrap(err, "opening public key file")
+		}
+
+		buf, err := io.ReadAll(f)
+		if err != nil {
+			return "", errors.Wrap(err, "reading public key file")
+		}
+
+		publicKey, err := jwt.ParseRSAPublicKeyFromPEM(buf)
+		if err != nil {
+			return "", errors.Wrap(err, "parsing public key file")
+		}
+
+		return publicKey, nil
 	})
 
 	if err != nil {

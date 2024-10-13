@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewDb() (*sqlx.DB, error) {
-	conn := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", Cfg.DBUser, Cfg.DBPassword, Cfg.DBName, Cfg.DBSslMode)
+func NewDb(cfg Config) (*sqlx.DB, error) {
+	conn := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBSslMode)
 
 	db, err := sqlx.Open("postgres", conn)
 	if err != nil {
