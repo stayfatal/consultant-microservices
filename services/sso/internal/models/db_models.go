@@ -3,10 +3,10 @@ package models
 import "time"
 
 type User struct {
-	Id        int       `json:"id"`
-	Login     string    `json:"login"`
-	Password  string    `json:"password"`
-	Name      string    `json:"name"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
+	Id           int       `json:"id" db:"id"`
+	Name         string    `json:"name" db:"name"`
+	Email        string    `json:"email" db:"email"`
+	Password     string    `json:"password" db:"password"`
+	IsConsultant bool      `json:"is_consultant" db:"is_consultant"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 }
