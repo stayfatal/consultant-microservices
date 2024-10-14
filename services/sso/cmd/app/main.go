@@ -2,6 +2,7 @@ package main
 
 import (
 	"cm/services/sso/config"
+	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/service"
 	transport "cm/services/sso/internal/transport/grpc"
@@ -9,11 +10,12 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 )
 
 func main() {
+	log := logger.New()
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed loading cfg")
@@ -28,7 +30,7 @@ func main() {
 
 	svc := service.New(repo)
 
-	authServer := transport.NewGRPCServer(svc)
+	authServer := transport.NewGRPCServer(svc, log)
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {

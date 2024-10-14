@@ -23,7 +23,7 @@ func (repo *repository) CreateUser(user models.User) (int, error) {
 	id := -1
 	rows, err := repo.db.NamedQuery(query, user)
 	if err != nil {
-		return -1, err
+		return -1, errors.Wrap(err, "creating user repository level")
 	}
 	rows.Next()
 	err = rows.Scan(&id)

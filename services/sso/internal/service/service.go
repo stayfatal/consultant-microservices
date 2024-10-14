@@ -42,7 +42,7 @@ func (svc *service) Register(user models.User) (string, error) {
 func (svc *service) Login(user models.User) (string, error) {
 	foundUser, err := svc.repo.GetUserByEmail(user)
 	if err != nil {
-		return "", errors.Wrap(err, "getting user by email service lvl")
+		return "", errors.Wrap(err, "getting user by email service level")
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password)); err != nil {
