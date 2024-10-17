@@ -2,41 +2,21 @@ package repository
 
 import (
 	"cm/services/sso/internal/models"
+	"cm/services/sso/internal/utils"
 	"testing"
 
-	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateUser(t *testing.T) {
-	db, err := sqlx.Open("sqlite3", ":memory:?_busy_timeout=5000&cache=shared")
+	db, err := utils.PrepareTestingDB()
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("cant prepare db for tests %v", err)
 	}
-	defer db.Close()
+	defer utils.ClearTestingDB(db)
 
-	tx, err := db.Beginx()
-	if err != nil {
-		t.Error(err)
-	}
-	defer tx.Rollback()
-
-	table := `CREATE TABLE IF NOT EXISTS users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(255) NOT NULL,
-		email VARCHAR(255) NOT NULL,
-		password VARCHAR(225) NOT NULL,
-		is_consultant BOOLEAN,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-	);`
-
-	_, err = tx.Exec(table)
-	if err != nil {
-		t.Error(err)
-	}
-
-	repo := New(tx)
+	repo := New(db)
 
 	expected := models.User{
 		Name:         "test",
@@ -47,51 +27,30 @@ func TestCreateUser(t *testing.T) {
 
 	id, err := repo.CreateUser(expected)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	got := models.User{}
 
-	err = tx.Get(&got, "SELECT * FROM users WHERE id = ?", id)
+	err = db.Get(&got, "SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	expected.Id = got.Id
 	expected.CreatedAt = got.CreatedAt
-	if ok := assert.Equal(t, expected, got); !ok {
-		t.Errorf("expected %v got %v", expected, got)
-	}
+	assert.Equal(t, expected, got)
+
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	db, err := sqlx.Open("sqlite3", ":memory:?_busy_timeout=5000&cache=shared")
+	db, err := utils.PrepareTestingDB()
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("cant prepare db for tests %v", err)
 	}
-	defer db.Close()
+	defer utils.ClearTestingDB(db)
 
-	tx, err := db.Beginx()
-	if err != nil {
-		t.Error(err)
-	}
-	defer tx.Rollback()
-
-	table := `CREATE TABLE IF NOT EXISTS users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(255) NOT NULL,
-		email VARCHAR(255) NOT NULL,
-		password VARCHAR(225) NOT NULL,
-		is_consultant BOOLEAN,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-	);`
-
-	_, err = tx.Exec(table)
-	if err != nil {
-		t.Error(err)
-	}
-
-	repo := New(tx)
+	repo := New(db)
 
 	expected := models.User{
 		Name:         "test",
@@ -102,17 +61,15 @@ func TestGetUserByEmail(t *testing.T) {
 
 	_, err = repo.CreateUser(expected)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	got, err := repo.GetUserByEmail(expected)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	expected.Id = got.Id
 	expected.CreatedAt = got.CreatedAt
-	if ok := assert.Equal(t, expected, got); !ok {
-		t.Errorf("expected %v got %v", expected, got)
-	}
+	assert.Equal(t, expected, got)
 }

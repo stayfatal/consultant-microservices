@@ -34,7 +34,7 @@ func main() {
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed creating listener")
+		log.Fatal().Err(err).Msg("failed starting listener")
 	}
 
 	srv := grpc.NewServer()

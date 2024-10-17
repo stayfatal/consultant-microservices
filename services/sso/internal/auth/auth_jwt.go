@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"cm/services/sso/internal/utils"
 	"io"
 	"os"
 	"time"
@@ -27,10 +28,16 @@ func CreateToken(id int) (string, error) {
 		},
 	})
 
-	f, err := os.Open("C:/Go-projects/consultant-microservices/services/sso/config/private_key.pem")
+	path, err := utils.GetFilePath("private_key.pem")
+	if err != nil {
+		return "", errors.Wrap(err, "getting private_key path")
+	}
+
+	f, err := os.Open(path)
 	if err != nil {
 		return "", errors.Wrap(err, "opening private key file")
 	}
+	defer f.Close()
 
 	b, err := io.ReadAll(f)
 	if err != nil {
@@ -57,7 +64,12 @@ func ValidateToken(token string) (*Claims, error) {
 			return nil, errors.Wrap(UnknownSignMethodError, "checking sign method")
 		}
 
-		f, err := os.Open("C:/Go-projects/consultant-microservices/services/public_key.pem")
+		path, err := utils.GetFilePath("public_key.pem")
+		if err != nil {
+			return "", errors.Wrap(err, "getting public_key.pem path")
+		}
+
+		f, err := os.Open(path)
 		if err != nil {
 			return "", errors.Wrap(err, "opening public key file")
 		}
