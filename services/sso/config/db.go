@@ -20,5 +20,20 @@ func NewDb(cfg Config) (*sqlx.DB, error) {
 		return nil, errors.Wrap(err, "pinging db")
 	}
 
+	//need to be deleted asap
+	table := `CREATE TABLE IF NOT EXISTS users(
+		id SERIAL PRIMARY KEY,
+		name VARCHAR(255) NOT NULL,
+		email VARCHAR(255) NOT NULL UNIQUE,
+		password VARCHAR(225) NOT NULL,
+		is_consultant BOOLEAN,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+	_, err = db.Exec(table)
+	if err != nil {
+		return nil, err
+	}
+	// ...
+
 	return db, nil
 }

@@ -1,9 +1,11 @@
 {
     "cSpell.words": [
         "dbname",
+        "dbtest",
         "gengrpc",
         "jmoiron",
         "kitgrpc",
+        "Msgf",
         "mypass",
         "sqlx",
         "sslmode"

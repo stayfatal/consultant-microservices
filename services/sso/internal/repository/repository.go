@@ -27,6 +27,7 @@ func (repo *repository) CreateUser(user models.User) (int, error) {
 	}
 	rows.Next()
 	err = rows.Scan(&id)
+	rows.Close()
 	return id, errors.Wrap(err, "creating user repository level")
 }
 

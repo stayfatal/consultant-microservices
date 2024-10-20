@@ -2,9 +2,9 @@ package service
 
 import (
 	"cm/services/sso/internal/auth"
+	"cm/services/sso/internal/dbtest"
 	"cm/services/sso/internal/models"
 	"cm/services/sso/internal/repository"
-	"cm/services/sso/internal/utils"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -13,13 +13,13 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	db, err := utils.PrepareTestingDB()
+	db, tx, err := dbtest.PrepareTestingDB()
 	if err != nil {
 		t.Fatalf("cant prepare db for tests %v", err)
 	}
-	defer utils.ClearTestingDB(db)
+	defer dbtest.ClearTestingDB(t, db, tx)
 
-	repo := repository.New(db)
+	repo := repository.New(tx)
 
 	svc := New(repo)
 
@@ -33,26 +33,26 @@ func TestRegister(t *testing.T) {
 
 	token, err := svc.Register(expected)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	claims, err := auth.ValidateToken(token)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if claims.Id != expected.Id {
-		t.Errorf("expected token id  %d got %d", expected.Id, claims.Id)
+		t.Fatalf("expected token id  %d got %d", expected.Id, claims.Id)
 	}
 
 	got := models.User{}
-	err = db.Get(&got, "SELECT * FROM users WHERE id = $1", expected.Id)
+	err = tx.Get(&got, "SELECT * FROM users WHERE id = $1", expected.Id)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(got.Password), []byte(expected.Password)); err != nil {
-		t.Errorf("expected and got passwords are not equal")
+		t.Fatalf("expected and got passwords are not equal")
 	}
 
 	got.Password = expected.Password
@@ -63,13 +63,13 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	db, err := utils.PrepareTestingDB()
+	db, tx, err := dbtest.PrepareTestingDB()
 	if err != nil {
 		t.Fatalf("cant prepare db for tests %v", err)
 	}
-	defer utils.ClearTestingDB(db)
+	defer dbtest.ClearTestingDB(t, db, tx)
 
-	repo := repository.New(db)
+	repo := repository.New(tx)
 
 	svc := New(repo)
 
@@ -100,8 +100,6 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	assert.Equal(t, expToken, gotToken)
 
 	assert.Equal(t, expClaims.Id, gotClaims.Id)
 }

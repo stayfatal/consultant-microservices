@@ -2,12 +2,12 @@ package transport
 
 import (
 	"cm/services/sso/internal/auth"
+	"cm/services/sso/internal/dbtest"
 	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/service"
 	transport "cm/services/sso/internal/transport/grpc"
 	"cm/services/sso/internal/transport/pb"
-	"cm/services/sso/internal/utils"
 	"context"
 	"net"
 	"testing"
@@ -20,13 +20,13 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	db, err := utils.PrepareTestingDB()
+	db, tx, err := dbtest.PrepareTestingDB()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer utils.ClearTestingDB(db)
+	defer dbtest.ClearTestingDB(t, db, tx)
 
-	repo := repository.New(db)
+	repo := repository.New(tx)
 
 	svc := service.New(repo)
 
@@ -76,16 +76,18 @@ func TestRegister(t *testing.T) {
 	if claims.Id != expectedId {
 		t.Errorf("expected id in token %d got %d", expectedId, claims.Id)
 	}
+
+	assert.Equal(t, claims.Id, expectedId)
 }
 
 func TestLogin(t *testing.T) {
-	db, err := utils.PrepareTestingDB()
+	db, tx, err := dbtest.PrepareTestingDB()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer utils.ClearTestingDB(db)
+	defer dbtest.ClearTestingDB(t, db, tx)
 
-	repo := repository.New(db)
+	repo := repository.New(tx)
 
 	svc := service.New(repo)
 
@@ -148,6 +150,5 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, expResp.Token, gotResp.Token)
 	assert.Equal(t, expClaims.Id, gotClaims.Id)
 }

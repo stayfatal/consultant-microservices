@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"cm/services/sso/internal/dbtest"
 	"cm/services/sso/internal/models"
-	"cm/services/sso/internal/utils"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -10,13 +10,13 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	db, err := utils.PrepareTestingDB()
+	db, tx, err := dbtest.PrepareTestingDB()
 	if err != nil {
-		t.Fatalf("cant prepare db for tests %v", err)
+		t.Fatal(err)
 	}
-	defer utils.ClearTestingDB(db)
+	defer dbtest.ClearTestingDB(t, db, tx)
 
-	repo := New(db)
+	repo := New(tx)
 
 	expected := models.User{
 		Name:         "test",
@@ -32,7 +32,7 @@ func TestCreateUser(t *testing.T) {
 
 	got := models.User{}
 
-	err = db.Get(&got, "SELECT * FROM users WHERE id = $1", id)
+	err = tx.Get(&got, "SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,17 +40,16 @@ func TestCreateUser(t *testing.T) {
 	expected.Id = got.Id
 	expected.CreatedAt = got.CreatedAt
 	assert.Equal(t, expected, got)
-
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	db, err := utils.PrepareTestingDB()
+	db, tx, err := dbtest.PrepareTestingDB()
 	if err != nil {
-		t.Fatalf("cant prepare db for tests %v", err)
+		t.Fatal(err)
 	}
-	defer utils.ClearTestingDB(db)
+	defer dbtest.ClearTestingDB(t, db, tx)
 
-	repo := New(db)
+	repo := New(tx)
 
 	expected := models.User{
 		Name:         "test",
