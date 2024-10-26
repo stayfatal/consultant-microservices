@@ -3,10 +3,10 @@ package middlewares
 import (
 	customlog "cm/services/sso/internal/logger"
 	"context"
+	"errors"
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
-	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 )
 
@@ -25,14 +25,16 @@ func Logger(logger *customlog.Logger) endpoint.Middleware {
 	}
 }
 
-func Recoverer() endpoint.Middleware {
+func Recoverer(logger *customlog.Logger) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-			resp, err := next(ctx, request)
-			if err := recover(); err != nil {
-				log.Error().Msgf("Recovered: %v", err)
-			}
-			return resp, err
+			defer func() {
+				if r := recover(); r != nil {
+					logger.Error().Msgf("Recovered: %v", r)
+					err = errors.New("internal server error")
+				}
+			}()
+			return next(ctx, request)
 		}
 	}
 }

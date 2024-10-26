@@ -13,7 +13,7 @@ type Logger struct {
 }
 
 func (cl *Logger) Log(args ...interface{}) error {
-	cl.Error().Stack().Fields(args).Msg("")
+	cl.Error().Stack().Err(args[1].(error)).Msg("")
 	return nil
 }
 

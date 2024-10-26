@@ -8,14 +8,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/pkg/errors"
+	"github.com/redis/go-redis/v9"
 )
 
 type service struct {
-	repo interfaces.Repository
+	repo  interfaces.Repository
+	cache interfaces.CacheDB
 }
 
-func New(repo interfaces.Repository) interfaces.Service {
-	return &service{repo: repo}
+func New(repo interfaces.Repository, cache interfaces.CacheDB) interfaces.Service {
+	return &service{repo: repo, cache: cache}
 }
 
 func (svc *service) Register(user models.User) (string, error) {
@@ -27,22 +29,40 @@ func (svc *service) Register(user models.User) (string, error) {
 
 	id, err := svc.repo.CreateUser(user)
 	if err != nil {
-		return "", errors.Wrap(err, "creating user service level")
+		return "", err
 	}
 	user.Id = id
 
+	err = svc.cache.SetUser(user)
+	if err != nil {
+		return "", err
+	}
+
 	token, err := auth.CreateToken(user.Id)
 	if err != nil {
-		return "", errors.Wrap(err, "creating token")
+		return "", err
 	}
 
 	return token, nil
 }
 
 func (svc *service) Login(user models.User) (string, error) {
-	foundUser, err := svc.repo.GetUserByEmail(user)
+	var foundUser models.User
+	foundUser, err := svc.cache.GetUser(user)
 	if err != nil {
-		return "", errors.Wrap(err, "getting user by email service level")
+		if err.Error() == redis.Nil.Error() {
+			foundUser, err = svc.repo.GetUserByEmail(user)
+			if err != nil {
+				return "", err
+			}
+
+			err = svc.cache.SetUser(foundUser)
+			if err != nil {
+				return "", err
+			}
+		} else {
+			return "", err
+		}
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password)); err != nil {
@@ -51,7 +71,7 @@ func (svc *service) Login(user models.User) (string, error) {
 
 	token, err := auth.CreateToken(foundUser.Id)
 	if err != nil {
-		return "", errors.Wrap(err, "creating token")
+		return "", err
 	}
 
 	return token, nil

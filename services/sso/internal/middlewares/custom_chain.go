@@ -7,5 +7,5 @@ import (
 )
 
 func CustomChain(logger *logger.Logger) endpoint.Middleware {
-	return endpoint.Chain(Recoverer(), Logger(logger))
+	return endpoint.Chain(Recoverer(logger), Logger(logger))
 }

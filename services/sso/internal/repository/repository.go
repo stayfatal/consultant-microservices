@@ -7,15 +7,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-type repository struct {
+type postgresRepo struct {
 	db interfaces.DB
 }
 
 func New(db interfaces.DB) interfaces.Repository {
-	return &repository{db: db}
+	return &postgresRepo{db: db}
 }
 
-func (repo *repository) CreateUser(user models.User) (int, error) {
+func (repo *postgresRepo) CreateUser(user models.User) (int, error) {
 	query := `INSERT INTO users
 	(name,email,password,is_consultant)
 	VALUES (:name,:email,:password,:is_consultant)
@@ -23,16 +23,16 @@ func (repo *repository) CreateUser(user models.User) (int, error) {
 	id := -1
 	rows, err := repo.db.NamedQuery(query, user)
 	if err != nil {
-		return -1, errors.Wrap(err, "creating user repository level")
+		return -1, errors.Wrap(err, "calling sqlx NamedQuery")
 	}
 	rows.Next()
 	err = rows.Scan(&id)
 	rows.Close()
-	return id, errors.Wrap(err, "creating user repository level")
+	return id, errors.Wrap(err, "scanning rows")
 }
 
-func (repo *repository) GetUserByEmail(user models.User) (models.User, error) {
+func (repo *postgresRepo) GetUserByEmail(user models.User) (models.User, error) {
 	foundedUser := models.User{}
 	err := repo.db.Get(&foundedUser, "SELECT * FROM users WHERE email = $1", user.Email)
-	return foundedUser, errors.Wrap(err, "getting user by email repository level")
+	return foundedUser, errors.Wrap(err, "calling sqlx Get")
 }

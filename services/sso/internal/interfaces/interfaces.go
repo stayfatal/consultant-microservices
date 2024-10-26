@@ -28,3 +28,8 @@ type DB interface {
 	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
 	Select(dest interface{}, query string, args ...interface{}) error
 }
+
+type CacheDB interface {
+	SetUser(user models.User) error
+	GetUser(user models.User) (models.User, error)
+}

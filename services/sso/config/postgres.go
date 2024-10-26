@@ -2,15 +2,16 @@ package config
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
-func NewDb(cfg Config) (*sqlx.DB, error) {
-	conn := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBSslMode)
-
+func NewPostgresDb(cfg *Config) (*sqlx.DB, error) {
+	conn := fmt.Sprintf("host=host.docker.internal port=%d user=%s password=%s dbname=%s sslmode=%s", cfg.POSTGRES_PORT, cfg.POSTGRES_USER, cfg.POSTGRES_PASSWORD, cfg.POSTGRES_NAME, cfg.POSTGRES_SSL_MODE)
+	log.Println(conn)
 	db, err := sqlx.Open("postgres", conn)
 	if err != nil {
 		return nil, errors.Wrap(err, "trying to conn to db")

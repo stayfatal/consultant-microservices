@@ -2,6 +2,7 @@ package service
 
 import (
 	"cm/services/sso/internal/auth"
+	"cm/services/sso/internal/cache"
 	"cm/services/sso/internal/dbtest"
 	"cm/services/sso/internal/models"
 	"cm/services/sso/internal/repository"
@@ -19,9 +20,21 @@ func TestRegister(t *testing.T) {
 	}
 	defer dbtest.ClearTestingDB(t, db, tx)
 
+	cachingDB, err := dbtest.PrepareCachingDB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := cachingDB.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	cache := cache.New(cachingDB)
 	repo := repository.New(tx)
 
-	svc := New(repo)
+	svc := New(repo, cache)
 
 	expected := models.User{
 		Id:           1,
@@ -69,9 +82,22 @@ func TestLogin(t *testing.T) {
 	}
 	defer dbtest.ClearTestingDB(t, db, tx)
 
+	cachingDB, err := dbtest.PrepareCachingDB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := cachingDB.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	cache := cache.New(cachingDB)
+
 	repo := repository.New(tx)
 
-	svc := New(repo)
+	svc := New(repo, cache)
 
 	user := models.User{
 		Id:           1,

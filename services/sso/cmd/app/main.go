@@ -2,6 +2,7 @@ package main
 
 import (
 	"cm/services/sso/config"
+	"cm/services/sso/internal/cache"
 	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/service"
@@ -24,18 +25,25 @@ func main() {
 		log.Fatal().Err(err).Msg("failed loading cfg")
 	}
 
-	db, err := config.NewDb(*cfg)
+	db, err := config.NewPostgresDb(cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed opening db")
 	}
 
+	cacheDB, err := config.NewRedisDb(cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed opening cache db")
+	}
+
 	repo := repository.New(db)
 
-	svc := service.New(repo)
+	cache := cache.New(cacheDB)
+
+	svc := service.New(repo, cache)
 
 	authServer := transport.NewGRPCServer(svc, log)
 
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.POSTGRES_PORT))
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed starting listener")
 	}
@@ -46,7 +54,7 @@ func main() {
 
 	exit := make(chan struct{})
 	go func() {
-		log.Info().Msgf("Server is now listening on port: %d", cfg.Port)
+		log.Info().Msgf("Server is now listening on port: %d", cfg.POSTGRES_PORT)
 		if err := srv.Serve(l); err != nil {
 			log.Error().Err(err).Msg("")
 			exit <- struct{}{}

@@ -1,22 +1,86 @@
 package repository
 
 import (
-	"cm/services/sso/internal/dbtest"
+	"cm/services/sso/config"
 	"cm/services/sso/internal/models"
+	"context"
+	"log"
+	"strconv"
 	"testing"
 
+	"github.com/docker/go-connections/nat"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func TestCreateUser(t *testing.T) {
-	db, tx, err := dbtest.PrepareTestingDB()
+func configureTest() (testcontainers.Container, *sqlx.DB, error) {
+	req := testcontainers.ContainerRequest{
+		Image:        "postgres:15.3-alpine",
+		ExposedPorts: []string{"5432/tcp"},
+		Env: map[string]string{
+			"POSTGRES_USER":     "postgres",
+			"POSTGRES_PASSWORD": "mypass",
+			"POSTGRES_DB":       "prod_consultant_db",
+		},
+		WaitingFor: wait.ForLog("database system is ready to accept connections"),
+	}
+	container, err := testcontainers.GenericContainer(context.Background(), testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	port, err := container.MappedPort(context.Background(), nat.Port("5432/tcp"))
+	if err != nil {
+		return nil, nil, err
+	}
+	log.Printf("***%s***\n", port.Port())
+
+	cfg.POSTGRES_PORT, err = strconv.Atoi(port.Port())
+	if err != nil {
+		return nil, nil, err
+	}
+	// cfg.POSTGRES_PORT = 5432
+	log.Printf("***%d***\n", cfg.POSTGRES_PORT)
+	db, err := config.NewPostgresDb(cfg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return container, db, nil
+}
+
+func gratefulTestStop(t *testing.T, container testcontainers.Container, db *sqlx.DB) {
+	defer func() {
+		err := testcontainers.TerminateContainer(container)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+	err := db.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer dbtest.ClearTestingDB(t, db, tx)
+}
 
-	repo := New(tx)
+func TestCreateUser(t *testing.T) {
+	container, db, err := configureTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer gratefulTestStop(t, container, db)
+
+	repo := New(db)
 
 	expected := models.User{
 		Name:         "test",
@@ -32,7 +96,7 @@ func TestCreateUser(t *testing.T) {
 
 	got := models.User{}
 
-	err = tx.Get(&got, "SELECT * FROM users WHERE id = $1", id)
+	err = db.Get(&got, "SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,13 +107,13 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	db, tx, err := dbtest.PrepareTestingDB()
+	container, db, err := configureTest()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer dbtest.ClearTestingDB(t, db, tx)
+	defer gratefulTestStop(t, container, db)
 
-	repo := New(tx)
+	repo := New(db)
 
 	expected := models.User{
 		Name:         "test",
