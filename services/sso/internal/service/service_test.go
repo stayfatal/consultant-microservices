@@ -7,6 +7,7 @@ import (
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/testhelpers"
 	"context"
+	"encoding/json"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -51,25 +52,39 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if claims.Id != expected.Id {
-		t.Fatalf("expected token id  %d got %d", expected.Id, claims.Id)
-	}
+	assert.Equal(t, claims.Id, expected.Id)
 
-	got := models.User{}
-	err = postgresDB.Get(&got, "SELECT * FROM users WHERE id = $1", expected.Id)
+	gotFromPostgres := models.User{}
+	err = postgresDB.Get(&gotFromPostgres, "SELECT * FROM users WHERE id = $1", expected.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(got.Password), []byte(expected.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(gotFromPostgres.Password), []byte(expected.Password)); err != nil {
 		t.Fatalf("expected and got passwords are not equal")
 	}
 
-	got.Password = expected.Password
-	got.Id = expected.Id
-	got.CreatedAt = expected.CreatedAt
+	gotFromPostgres.Password = expected.Password
+	gotFromPostgres.Id = expected.Id
+	gotFromPostgres.CreatedAt = expected.CreatedAt
 
-	assert.Equal(t, expected, got)
+	assert.Equal(t, expected, gotFromPostgres)
+
+	gotFromRedis := models.User{}
+	result, err := redisDB.Get(context.Background(), expected.Email).Result()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = json.Unmarshal([]byte(result), &gotFromRedis)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gotFromRedis.Password = expected.Password
+	gotFromRedis.Id = expected.Id
+	gotFromRedis.CreatedAt = expected.CreatedAt
+	assert.Equal(t, expected, gotFromRedis)
 }
 
 func TestLogin(t *testing.T) {
@@ -92,25 +107,27 @@ func TestLogin(t *testing.T) {
 
 	svc := New(repo, cache)
 
-	user := models.User{
-		Id:           1,
+	expected := models.User{
 		Name:         "test",
 		Email:        "test@testmail.com",
 		Password:     "123",
 		IsConsultant: false,
 	}
 
-	expToken, err := svc.Register(user)
+	var (
+		id int
+	)
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(expected.Password), bcrypt.DefaultCost)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	expClaims, err := auth.ValidateToken(expToken)
+	err = postgresDB.QueryRow("INSERT INTO users (name,email,password,is_consultant) VALUES ($1,$2,$3,$4) RETURNING id", expected.Name, expected.Email, hashedPass, expected.IsConsultant).Scan(&id)
 	if err != nil {
 		t.Fatal(err)
 	}
+	expected.Id = id
 
-	gotToken, err := svc.Login(user)
+	gotToken, err := svc.Login(expected)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,5 +137,5 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, expClaims.Id, gotClaims.Id)
+	assert.Equal(t, expected.Id, gotClaims.Id)
 }

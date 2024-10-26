@@ -3,7 +3,6 @@ package config
 import (
 	"cm/services/sso/utils"
 	"fmt"
-	"log"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -47,7 +46,6 @@ func LoadPostgresConfig() (*PostgresConfig, error) {
 
 func NewPostgresDb(cfg *PostgresConfig) (*sqlx.DB, error) {
 	conn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", cfg.HOST, cfg.PORT, cfg.USER, cfg.PASSWORD, cfg.DB_NAME, cfg.SSL_MODE)
-	log.Println(conn)
 	db, err := sqlx.Open("postgres", conn)
 	if err != nil {
 		return nil, errors.Wrap(err, "trying to conn to db")
