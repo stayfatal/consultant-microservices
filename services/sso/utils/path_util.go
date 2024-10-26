@@ -12,9 +12,9 @@ func GetPath(relativePath string) (string, error) {
 	}
 	dirs := strings.Split(wd, "/")
 	var path string
-	for i := 1; i < len(dirs); i++ {
-		path += "/" + dirs[i]
+	for i := len(dirs) - 1; i >= 0; i-- {
 		if dirs[i] == "consultant-microservices" {
+			path = strings.Join(dirs[:i+1], "/")
 			break
 		}
 	}

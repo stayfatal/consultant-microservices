@@ -1,6 +1,6 @@
 module cm
 
-go 1.22.3
+go 1.22
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
