@@ -20,17 +20,27 @@ import (
 func main() {
 	log := logger.New()
 
-	cfg, err := config.LoadConfig()
+	postgresCfg, err := config.LoadPostgresConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed loading cfg")
 	}
 
-	db, err := config.NewPostgresDb(cfg)
+	redisCfg, err := config.LoadRedisConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed loading cfg")
+	}
+
+	serverCfg, err := config.LoadServerConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed loading cfg")
+	}
+
+	db, err := config.NewPostgresDb(postgresCfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed opening db")
 	}
 
-	cacheDB, err := config.NewRedisDb(cfg)
+	cacheDB, err := config.NewRedisDb(redisCfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed opening cache db")
 	}
@@ -43,7 +53,7 @@ func main() {
 
 	authServer := transport.NewGRPCServer(svc, log)
 
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.POSTGRES_PORT))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", serverCfg.PORT))
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed starting listener")
 	}
@@ -54,7 +64,7 @@ func main() {
 
 	exit := make(chan struct{})
 	go func() {
-		log.Info().Msgf("Server is now listening on port: %d", cfg.POSTGRES_PORT)
+		log.Info().Msgf("Server is now listening on port: %d", serverCfg.PORT)
 		if err := srv.Serve(l); err != nil {
 			log.Error().Err(err).Msg("")
 			exit <- struct{}{}

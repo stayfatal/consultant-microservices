@@ -1,25 +1,21 @@
 package cache
 
 import (
-	"cm/services/sso/internal/dbtest"
 	"cm/services/sso/internal/models"
+	"cm/services/sso/internal/testhelpers"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSetGetUser(t *testing.T) {
-	db, err := dbtest.PrepareCachingDB()
+	ctx := context.Background()
+	container, db, err := testhelpers.ConfigureRedisContainer(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
-
+	defer testhelpers.CleanupRedisContainer(t, container, db)
 	cache := New(db)
 
 	user := models.User{

@@ -3,10 +3,10 @@ package transport
 import (
 	"cm/services/sso/internal/auth"
 	"cm/services/sso/internal/cache"
-	"cm/services/sso/internal/dbtest"
 	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/service"
+	"cm/services/sso/internal/testhelpers"
 	transport "cm/services/sso/internal/transport/grpc"
 	"cm/services/sso/internal/transport/pb"
 	"context"
@@ -21,26 +21,22 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	db, tx, err := dbtest.PrepareTestingDB()
+	ctx := context.Background()
+	postgresContainer, postgresDB, err := testhelpers.ConfigurePostgresContainer(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer dbtest.ClearTestingDB(t, db, tx)
+	defer testhelpers.CleanupPostgresContainer(t, postgresContainer, postgresDB)
 
-	cachingDB, err := dbtest.PrepareCachingDB()
+	redisContainer, redisDB, err := testhelpers.ConfigureRedisContainer(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		err := cachingDB.Close()
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
+	defer testhelpers.CleanupRedisContainer(t, redisContainer, redisDB)
 
-	cache := cache.New(cachingDB)
+	cache := cache.New(redisDB)
 
-	repo := repository.New(tx)
+	repo := repository.New(postgresDB)
 
 	svc := service.New(repo, cache)
 
@@ -95,26 +91,22 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	db, tx, err := dbtest.PrepareTestingDB()
+	ctx := context.Background()
+	postgresContainer, postgresDB, err := testhelpers.ConfigurePostgresContainer(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer dbtest.ClearTestingDB(t, db, tx)
+	defer testhelpers.CleanupPostgresContainer(t, postgresContainer, postgresDB)
 
-	cachingDB, err := dbtest.PrepareCachingDB()
+	redisContainer, redisDB, err := testhelpers.ConfigureRedisContainer(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		err := cachingDB.Close()
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
+	defer testhelpers.CleanupRedisContainer(t, redisContainer, redisDB)
 
-	cache := cache.New(cachingDB)
+	cache := cache.New(redisDB)
 
-	repo := repository.New(tx)
+	repo := repository.New(postgresDB)
 
 	svc := service.New(repo, cache)
 

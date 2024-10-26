@@ -1,11 +1,9 @@
 package auth
 
 import (
-	"fmt"
+	"cm/services/sso/utils"
 	"io"
 	"os"
-	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -30,7 +28,7 @@ func CreateToken(id int) (string, error) {
 		},
 	})
 
-	path, err := getFilePath("private_key.pem")
+	path, err := utils.GetPath("services/sso/internal/auth/private_key.pem")
 	if err != nil {
 		return "", errors.Wrap(err, "getting private_key path")
 	}
@@ -66,7 +64,7 @@ func ValidateToken(token string) (*Claims, error) {
 			return nil, errors.Wrap(UnknownSignMethodError, "checking sign method")
 		}
 
-		path, err := getFilePath("public_key.pem")
+		path, err := utils.GetPath("services/sso/internal/auth/public_key.pem")
 		if err != nil {
 			return "", errors.Wrap(err, "getting public_key.pem path")
 		}
@@ -98,17 +96,4 @@ func ValidateToken(token string) (*Claims, error) {
 	}
 
 	return claims, nil
-}
-
-func getFilePath(filename string) (string, error) {
-	_, currentFile, _, ok := runtime.Caller(1)
-	if !ok {
-		return "", fmt.Errorf("unable to get caller information")
-	}
-
-	dir := filepath.Dir(currentFile)
-
-	fullPath := filepath.Join(dir, filename)
-
-	return fullPath, nil
 }

@@ -3,9 +3,10 @@ package service
 import (
 	"cm/services/sso/internal/auth"
 	"cm/services/sso/internal/cache"
-	"cm/services/sso/internal/dbtest"
 	"cm/services/sso/internal/models"
 	"cm/services/sso/internal/repository"
+	"cm/services/sso/internal/testhelpers"
+	"context"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -14,25 +15,21 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	db, tx, err := dbtest.PrepareTestingDB()
-	if err != nil {
-		t.Fatalf("cant prepare db for tests %v", err)
-	}
-	defer dbtest.ClearTestingDB(t, db, tx)
-
-	cachingDB, err := dbtest.PrepareCachingDB()
+	ctx := context.Background()
+	posgresContainer, postgresDB, err := testhelpers.ConfigurePostgresContainer(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		err := cachingDB.Close()
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
+	defer testhelpers.CleanupPostgresContainer(t, posgresContainer, postgresDB)
 
-	cache := cache.New(cachingDB)
-	repo := repository.New(tx)
+	redisContainer, redisDB, err := testhelpers.ConfigureRedisContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer testhelpers.CleanupRedisContainer(t, redisContainer, redisDB)
+
+	cache := cache.New(redisDB)
+	repo := repository.New(postgresDB)
 
 	svc := New(repo, cache)
 
@@ -59,7 +56,7 @@ func TestRegister(t *testing.T) {
 	}
 
 	got := models.User{}
-	err = tx.Get(&got, "SELECT * FROM users WHERE id = $1", expected.Id)
+	err = postgresDB.Get(&got, "SELECT * FROM users WHERE id = $1", expected.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,26 +73,22 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	db, tx, err := dbtest.PrepareTestingDB()
-	if err != nil {
-		t.Fatalf("cant prepare db for tests %v", err)
-	}
-	defer dbtest.ClearTestingDB(t, db, tx)
-
-	cachingDB, err := dbtest.PrepareCachingDB()
+	ctx := context.Background()
+	postgresContainer, postgresDB, err := testhelpers.ConfigurePostgresContainer(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() {
-		err := cachingDB.Close()
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
+	defer testhelpers.CleanupPostgresContainer(t, postgresContainer, postgresDB)
 
-	cache := cache.New(cachingDB)
+	redisContainer, redisDB, err := testhelpers.ConfigureRedisContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer testhelpers.CleanupRedisContainer(t, redisContainer, redisDB)
 
-	repo := repository.New(tx)
+	cache := cache.New(redisDB)
+
+	repo := repository.New(postgresDB)
 
 	svc := New(repo, cache)
 
