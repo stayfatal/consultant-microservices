@@ -1,7 +1,7 @@
 package config
 
 import (
-	"cm/services/sso/utils"
+	"cm/services/utils"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"

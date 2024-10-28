@@ -1,8 +1,8 @@
 package cache
 
 import (
+	"cm/services/entities"
 	"cm/services/sso/internal/interfaces"
-	"cm/services/sso/internal/models"
 	"context"
 	"encoding/json"
 	"time"
@@ -19,7 +19,7 @@ func New(db *redis.Client) interfaces.CacheDB {
 	return &redisRepo{db: db}
 }
 
-func (rr *redisRepo) SetUser(user models.User) error {
+func (rr *redisRepo) SetUser(user entities.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	binary, err := json.Marshal(user)
@@ -30,17 +30,17 @@ func (rr *redisRepo) SetUser(user models.User) error {
 	return errors.Wrap(err, "setting into redis")
 }
 
-func (rr *redisRepo) GetUser(user models.User) (models.User, error) {
+func (rr *redisRepo) GetUser(user entities.User) (entities.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	got := models.User{}
+	got := entities.User{}
 	result, err := rr.db.Get(ctx, user.Email).Result()
 	if err != nil {
-		return models.User{}, err
+		return entities.User{}, err
 	}
 	err = json.Unmarshal([]byte(result), &got)
 	if err != nil {
-		return models.User{}, err
+		return entities.User{}, err
 	}
 	return got, errors.Wrap(err, "getting from redis")
 }

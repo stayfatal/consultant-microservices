@@ -1,7 +1,7 @@
 package config
 
 import (
-	"cm/services/sso/utils"
+	"cm/services/utils"
 	"context"
 	"fmt"
 	"time"

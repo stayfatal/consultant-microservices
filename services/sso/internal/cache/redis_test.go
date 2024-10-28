@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"cm/services/sso/internal/models"
+	"cm/services/entities"
 	"cm/services/sso/internal/testhelpers"
 	"context"
 	"encoding/json"
@@ -20,7 +20,7 @@ func TestSetUser(t *testing.T) {
 	defer testhelpers.CleanupRedisContainer(t, container, db)
 	cache := New(db)
 
-	expected := models.User{
+	expected := entities.User{
 		Name:         "test",
 		Email:        "test@testmail.com",
 		Password:     "123",
@@ -32,7 +32,7 @@ func TestSetUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got := models.User{}
+	got := entities.User{}
 	result, err := db.Get(ctx, expected.Email).Result()
 	if err != nil {
 		t.Fatal(err)
@@ -54,7 +54,7 @@ func TestGetUser(t *testing.T) {
 	defer testhelpers.CleanupRedisContainer(t, container, db)
 	cache := New(db)
 
-	expected := models.User{
+	expected := entities.User{
 		Name:         "test",
 		Email:        "test@testmail.com",
 		Password:     "123",

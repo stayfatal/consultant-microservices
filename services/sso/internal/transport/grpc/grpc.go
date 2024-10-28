@@ -1,11 +1,11 @@
 package transport
 
 import (
+	"cm/services/gen/authpb"
 	"cm/services/sso/internal/endpoints"
 	"cm/services/sso/internal/interfaces"
 	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/middlewares"
-	"cm/services/sso/internal/transport/pb"
 	"context"
 
 	"github.com/go-kit/kit/transport"
@@ -13,7 +13,7 @@ import (
 )
 
 type AuthServer struct {
-	pb.UnimplementedAuthenticationServer
+	authpb.UnimplementedAuthenticationServer
 	register kitgrpc.Handler
 	login    kitgrpc.Handler
 }
@@ -37,18 +37,18 @@ func NewGRPCServer(svc interfaces.Service, logger *logger.Logger) *AuthServer {
 	}
 }
 
-func (s *AuthServer) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+func (s *AuthServer) Register(ctx context.Context, request *authpb.RegisterRequest) (*authpb.RegisterResponse, error) {
 	_, resp, err := s.register.ServeGRPC(ctx, request)
 	if err != nil {
 		return nil, err
 	}
-	return resp.(*pb.RegisterResponse), nil
+	return resp.(*authpb.RegisterResponse), nil
 }
 
-func (s *AuthServer) Login(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
+func (s *AuthServer) Login(ctx context.Context, request *authpb.LoginRequest) (*authpb.LoginResponse, error) {
 	_, resp, err := s.login.ServeGRPC(ctx, request)
 	if err != nil {
 		return nil, err
 	}
-	return resp.(*pb.LoginResponse), nil
+	return resp.(*authpb.LoginResponse), nil
 }

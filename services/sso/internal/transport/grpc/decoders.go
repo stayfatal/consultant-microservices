@@ -1,15 +1,16 @@
 package transport
 
 import (
+	"cm/services/entities"
+	"cm/services/gen/authpb"
 	"cm/services/sso/internal/models"
-	"cm/services/sso/internal/transport/pb"
 	"context"
 )
 
 func decodeRegisterRequest(_ context.Context, request interface{}) (interface{}, error) {
-	req := request.(*pb.RegisterRequest)
+	req := request.(*authpb.RegisterRequest)
 	return models.RegisterRequest{
-		User: models.User{
+		User: entities.User{
 			Name:         req.Name,
 			Email:        req.Email,
 			Password:     req.Password,
@@ -19,9 +20,9 @@ func decodeRegisterRequest(_ context.Context, request interface{}) (interface{},
 }
 
 func decodeLoginRequest(_ context.Context, request interface{}) (interface{}, error) {
-	req := request.(*pb.LoginRequest)
+	req := request.(*authpb.LoginRequest)
 	return models.LoginRequest{
-		User: models.User{
+		User: entities.User{
 			Email:    req.Email,
 			Password: req.Password,
 		},

@@ -1,20 +1,20 @@
 package interfaces
 
 import (
-	"cm/services/sso/internal/models"
+	"cm/services/entities"
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type Service interface {
-	Register(user models.User) (string, error)
-	Login(user models.User) (string, error)
+	Register(user entities.User) (string, error)
+	Login(user entities.User) (string, error)
 }
 
 type Repository interface {
-	CreateUser(user models.User) (int, error)
-	GetUserByEmail(user models.User) (models.User, error)
+	CreateUser(user entities.User) (int, error)
+	GetUserByEmail(user entities.User) (entities.User, error)
 }
 
 type DB interface {
@@ -30,6 +30,6 @@ type DB interface {
 }
 
 type CacheDB interface {
-	SetUser(user models.User) error
-	GetUser(user models.User) (models.User, error)
+	SetUser(user entities.User) error
+	GetUser(user entities.User) (entities.User, error)
 }

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package task;
 
-option go_package = "pb";
+option go_package = "authpb";
 
 service Authentication {
     rpc Register (RegisterRequest) returns (RegisterResponse){}

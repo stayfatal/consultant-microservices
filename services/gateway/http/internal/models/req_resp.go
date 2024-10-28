@@ -2,11 +2,11 @@ package models
 
 import "cm/services/entities"
 
-type RegisterRequest struct {
+type RegistrationRequest struct {
 	User entities.User
 }
 
-type RegisterResponse struct {
+type RegistrationResponse struct {
 	Token string
 	Error string
 }

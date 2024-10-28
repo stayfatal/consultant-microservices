@@ -4,7 +4,7 @@
 // 	protoc        v3.14.0
 // source: sso.proto
 
-package pb
+package authpb
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

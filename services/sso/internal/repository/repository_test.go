@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"cm/services/sso/internal/models"
+	"cm/services/entities"
 	"cm/services/sso/internal/testhelpers"
 	"context"
 	"testing"
@@ -21,7 +21,7 @@ func TestCreateUser(t *testing.T) {
 
 	repo := New(db)
 
-	expected := models.User{
+	expected := entities.User{
 		Name:         "test",
 		Email:        "test@gmail.com",
 		Password:     "123",
@@ -33,7 +33,7 @@ func TestCreateUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got := models.User{}
+	got := entities.User{}
 
 	err = db.Get(&got, "SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
@@ -55,7 +55,7 @@ func TestGetUserByEmail(t *testing.T) {
 
 	repo := New(db)
 
-	expected := models.User{
+	expected := entities.User{
 		Name:         "test",
 		Email:        "test@gmail.com",
 		Password:     "123",

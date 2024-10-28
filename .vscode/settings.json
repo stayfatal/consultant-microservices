@@ -1,10 +1,12 @@
 {
     "cSpell.words": [
+        "authpb",
         "dbname",
         "dbtest",
         "gengrpc",
         "jmoiron",
         "kitgrpc",
+        "kithttp",
         "Msgf",
         "mypass",
         "Queryx",

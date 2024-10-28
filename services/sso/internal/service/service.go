@@ -1,9 +1,9 @@
 package service
 
 import (
+	"cm/services/entities"
 	"cm/services/sso/internal/auth"
 	"cm/services/sso/internal/interfaces"
-	"cm/services/sso/internal/models"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -20,7 +20,7 @@ func New(repo interfaces.Repository, cache interfaces.CacheDB) interfaces.Servic
 	return &service{repo: repo, cache: cache}
 }
 
-func (svc *service) Register(user models.User) (string, error) {
+func (svc *service) Register(user entities.User) (string, error) {
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", errors.Wrap(err, "generating hashed password")
@@ -46,8 +46,8 @@ func (svc *service) Register(user models.User) (string, error) {
 	return token, nil
 }
 
-func (svc *service) Login(user models.User) (string, error) {
-	var foundUser models.User
+func (svc *service) Login(user entities.User) (string, error) {
+	var foundUser entities.User
 	foundUser, err := svc.cache.GetUser(user)
 	if err != nil {
 		if err.Error() == redis.Nil.Error() {

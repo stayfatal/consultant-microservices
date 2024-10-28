@@ -1,7 +1,7 @@
 package config
 
 import (
-	"cm/services/sso/utils"
+	"cm/services/utils"
 
 	"github.com/pkg/errors"
 	viperr "github.com/spf13/viper"

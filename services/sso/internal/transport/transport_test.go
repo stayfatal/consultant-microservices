@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"cm/services/gen/authpb"
 	"cm/services/sso/internal/auth"
 	"cm/services/sso/internal/cache"
 	"cm/services/sso/internal/logger"
@@ -8,7 +9,6 @@ import (
 	"cm/services/sso/internal/service"
 	"cm/services/sso/internal/testhelpers"
 	transport "cm/services/sso/internal/transport/grpc"
-	"cm/services/sso/internal/transport/pb"
 	"context"
 	"net"
 	"testing"
@@ -52,17 +52,17 @@ func TestRegister(t *testing.T) {
 	}
 	defer l.Close()
 
-	pb.RegisterAuthenticationServer(srv, authSrv)
+	authpb.RegisterAuthenticationServer(srv, authSrv)
 	go srv.Serve(l)
 
 	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatal(err)
 	}
-	authClient := pb.NewAuthenticationClient(conn)
+	authClient := authpb.NewAuthenticationClient(conn)
 
 	expectedId := 1
-	req := &pb.RegisterRequest{
+	req := &authpb.RegisterRequest{
 		Name:         "test",
 		Email:        "test@testmail.com",
 		Password:     "123",
@@ -122,18 +122,18 @@ func TestLogin(t *testing.T) {
 	}
 	defer l.Close()
 
-	pb.RegisterAuthenticationServer(srv, authSrv)
+	authpb.RegisterAuthenticationServer(srv, authSrv)
 	go srv.Serve(l)
 
 	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatal(err)
 	}
-	authClient := pb.NewAuthenticationClient(conn)
+	authClient := authpb.NewAuthenticationClient(conn)
 
 	testEmail := "test@testmail.com"
 	testPass := "123"
-	expResp, err := authClient.Register(context.Background(), &pb.RegisterRequest{
+	expResp, err := authClient.Register(context.Background(), &authpb.RegisterRequest{
 		Name:         "test",
 		Email:        testEmail,
 		Password:     testPass,
@@ -152,7 +152,7 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	gotResp, err := authClient.Login(context.Background(), &pb.LoginRequest{
+	gotResp, err := authClient.Login(context.Background(), &authpb.LoginRequest{
 		Email:    testEmail,
 		Password: testPass,
 	})

@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"cm/services/entities"
 	"cm/services/sso/internal/interfaces"
-	"cm/services/sso/internal/models"
 
 	"github.com/pkg/errors"
 )
@@ -15,7 +15,7 @@ func New(db interfaces.DB) interfaces.Repository {
 	return &postgresRepo{db: db}
 }
 
-func (repo *postgresRepo) CreateUser(user models.User) (int, error) {
+func (repo *postgresRepo) CreateUser(user entities.User) (int, error) {
 	query := `INSERT INTO users
 	(name,email,password,is_consultant)
 	VALUES (:name,:email,:password,:is_consultant)
@@ -31,8 +31,8 @@ func (repo *postgresRepo) CreateUser(user models.User) (int, error) {
 	return id, errors.Wrap(err, "scanning rows")
 }
 
-func (repo *postgresRepo) GetUserByEmail(user models.User) (models.User, error) {
-	foundedUser := models.User{}
+func (repo *postgresRepo) GetUserByEmail(user entities.User) (entities.User, error) {
+	foundedUser := entities.User{}
 	err := repo.db.Get(&foundedUser, "SELECT * FROM users WHERE email = $1", user.Email)
 	return foundedUser, errors.Wrap(err, "calling sqlx Get")
 }

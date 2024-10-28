@@ -1,9 +1,9 @@
 package service
 
 import (
+	"cm/services/entities"
 	"cm/services/sso/internal/auth"
 	"cm/services/sso/internal/cache"
-	"cm/services/sso/internal/models"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/testhelpers"
 	"context"
@@ -34,7 +34,7 @@ func TestRegister(t *testing.T) {
 
 	svc := New(repo, cache)
 
-	expected := models.User{
+	expected := entities.User{
 		Id:           1,
 		Name:         "test",
 		Email:        "test@testmail.com",
@@ -54,7 +54,7 @@ func TestRegister(t *testing.T) {
 
 	assert.Equal(t, claims.Id, expected.Id)
 
-	gotFromPostgres := models.User{}
+	gotFromPostgres := entities.User{}
 	err = postgresDB.Get(&gotFromPostgres, "SELECT * FROM users WHERE id = $1", expected.Id)
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +70,7 @@ func TestRegister(t *testing.T) {
 
 	assert.Equal(t, expected, gotFromPostgres)
 
-	gotFromRedis := models.User{}
+	gotFromRedis := entities.User{}
 	result, err := redisDB.Get(context.Background(), expected.Email).Result()
 	if err != nil {
 		t.Fatal(err)
@@ -107,7 +107,7 @@ func TestLogin(t *testing.T) {
 
 	svc := New(repo, cache)
 
-	expected := models.User{
+	expected := entities.User{
 		Name:         "test",
 		Email:        "test@testmail.com",
 		Password:     "123",

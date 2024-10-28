@@ -1,13 +1,13 @@
 package main
 
 import (
+	"cm/services/gen/authpb"
 	"cm/services/sso/config"
 	"cm/services/sso/internal/cache"
 	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/service"
 	transport "cm/services/sso/internal/transport/grpc"
-	"cm/services/sso/internal/transport/pb"
 	"fmt"
 	"net"
 	"os"
@@ -60,7 +60,7 @@ func main() {
 
 	srv := grpc.NewServer()
 
-	pb.RegisterAuthenticationServer(srv, authServer)
+	authpb.RegisterAuthenticationServer(srv, authServer)
 
 	exit := make(chan struct{})
 	go func() {
