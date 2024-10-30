@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"cm/services/entities"
+	"cm/internal/entities"
 	"cm/services/sso/internal/testhelpers"
 	"context"
 	"encoding/json"
@@ -13,11 +13,11 @@ import (
 
 func TestSetUser(t *testing.T) {
 	ctx := context.Background()
-	container, db, err := testhelpers.ConfigureRedisContainer(ctx)
+	db, err := testhelpers.PrepareRedis(t)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testhelpers.CleanupRedisContainer(t, container, db)
+
 	cache := New(db)
 
 	expected := entities.User{
@@ -47,11 +47,11 @@ func TestSetUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	ctx := context.Background()
-	container, db, err := testhelpers.ConfigureRedisContainer(ctx)
+	db, err := testhelpers.PrepareRedis(t)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testhelpers.CleanupRedisContainer(t, container, db)
+
 	cache := New(db)
 
 	expected := entities.User{

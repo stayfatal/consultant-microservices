@@ -1,8 +1,8 @@
 package interfaces
 
 import (
-	"cm/services/entities"
-	"cm/services/gen/authpb"
+	"cm/gen/authpb"
+	"cm/internal/entities"
 )
 
 type Service interface {

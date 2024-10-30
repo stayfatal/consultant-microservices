@@ -1,7 +1,7 @@
 package config
 
 import (
-	"cm/services/utils"
+	"cm/internal/utils"
 
 	"github.com/pkg/errors"
 	viperr "github.com/spf13/viper"

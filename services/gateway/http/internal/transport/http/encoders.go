@@ -1,8 +1,8 @@
 package transport
 
 import (
+	"cm/gen/authpb"
 	"cm/services/gateway/http/internal/models"
-	"cm/services/gen/authpb"
 	"context"
 	"encoding/json"
 	"net/http"

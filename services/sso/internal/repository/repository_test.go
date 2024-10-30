@@ -1,9 +1,8 @@
 package repository
 
 import (
-	"cm/services/entities"
+	"cm/internal/entities"
 	"cm/services/sso/internal/testhelpers"
-	"context"
 	"testing"
 	"time"
 
@@ -12,14 +11,12 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	ctx := context.Background()
-	container, db, err := testhelpers.ConfigurePostgresContainer(ctx)
+	tx, err := testhelpers.PreparePostgres(t)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testhelpers.CleanupPostgresContainer(t, container, db)
 
-	repo := New(db)
+	repo := New(tx)
 
 	expected := entities.User{
 		Name:         "test",
@@ -35,7 +32,7 @@ func TestCreateUser(t *testing.T) {
 
 	got := entities.User{}
 
-	err = db.Get(&got, "SELECT * FROM users WHERE id = $1", id)
+	err = tx.Get(&got, "SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,14 +43,12 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	ctx := context.Background()
-	container, db, err := testhelpers.ConfigurePostgresContainer(ctx)
+	tx, err := testhelpers.PreparePostgres(t)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testhelpers.CleanupPostgresContainer(t, container, db)
 
-	repo := New(db)
+	repo := New(tx)
 
 	expected := entities.User{
 		Name:         "test",
@@ -66,7 +61,7 @@ func TestGetUserByEmail(t *testing.T) {
 		id         int
 		created_at time.Time
 	)
-	err = db.QueryRow("INSERT INTO users (name,email,password,is_consultant) VALUES ($1,$2,$3,$4) RETURNING id, created_at", expected.Name, expected.Email, expected.Password, expected.IsConsultant).Scan(&id, &created_at)
+	err = tx.QueryRow("INSERT INTO users (name,email,password,is_consultant) VALUES ($1,$2,$3,$4) RETURNING id, created_at", expected.Name, expected.Email, expected.Password, expected.IsConsultant).Scan(&id, &created_at)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"cm/services/entities"
+	"cm/internal/entities"
 	"cm/services/sso/internal/interfaces"
 	"context"
 	"encoding/json"

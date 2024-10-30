@@ -1,7 +1,7 @@
-package auth
+package publicauth
 
 import (
-	"cm/services/utils"
+	"cm/internal/utils"
 	"io"
 	"os"
 
@@ -26,7 +26,7 @@ func ValidateToken(token string) (*Claims, error) {
 			return nil, errors.Wrap(UnknownSignMethodError, "checking sign method")
 		}
 
-		path, err := utils.GetPath("services/public_key.pem")
+		path, err := utils.GetPath("internal/publicauth/public_key.pem")
 		if err != nil {
 			return "", errors.Wrap(err, "getting public_key.pem path")
 		}

@@ -1,9 +1,9 @@
 package service
 
 import (
-	"cm/services/entities"
+	"cm/gen/authpb"
+	"cm/internal/entities"
 	"cm/services/gateway/http/internal/interfaces"
-	"cm/services/gen/authpb"
 	"context"
 
 	"google.golang.org/grpc"
@@ -15,7 +15,7 @@ type service struct {
 }
 
 func New() (interfaces.Service, error) {
-	client, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err := grpc.NewClient("sso:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

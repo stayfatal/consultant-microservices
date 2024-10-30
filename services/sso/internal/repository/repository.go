@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"cm/services/entities"
+	"cm/internal/entities"
 	"cm/services/sso/internal/interfaces"
 
 	"github.com/pkg/errors"

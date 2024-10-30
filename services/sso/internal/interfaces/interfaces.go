@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"cm/services/entities"
+	"cm/internal/entities"
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"

@@ -9,6 +9,8 @@
         "kithttp",
         "Msgf",
         "mypass",
+        "privateauth",
+        "publicauth",
         "Queryx",
         "Rowx",
         "sqlx",

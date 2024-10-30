@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cm/services/gen/authpb"
+	"cm/gen/authpb"
 	"cm/services/sso/config"
 	"cm/services/sso/internal/cache"
 	"cm/services/sso/internal/logger"

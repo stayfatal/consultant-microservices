@@ -1,8 +1,8 @@
 package transport
 
 import (
-	"cm/services/entities"
-	"cm/services/gen/authpb"
+	"cm/gen/authpb"
+	"cm/internal/entities"
 	"cm/services/sso/internal/models"
 	"context"
 )

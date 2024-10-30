@@ -1,6 +1,9 @@
-package auth
+package privateauth
 
-import "testing"
+import (
+	"cm/internal/publicauth"
+	"testing"
+)
 
 func TestCreatingAndValidatingToken(t *testing.T) {
 	id := 5
@@ -9,7 +12,7 @@ func TestCreatingAndValidatingToken(t *testing.T) {
 		t.Error(err)
 	}
 
-	claims, err := ValidateToken(token)
+	claims, err := publicauth.ValidateToken(token)
 	if err != nil {
 		t.Error(err)
 	}

@@ -1,9 +1,9 @@
 package service
 
 import (
-	"cm/services/entities"
-	"cm/services/sso/internal/auth"
+	"cm/internal/entities"
 	"cm/services/sso/internal/interfaces"
+	"cm/services/sso/internal/privateauth"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -38,7 +38,7 @@ func (svc *service) Register(user entities.User) (string, error) {
 		return "", err
 	}
 
-	token, err := auth.CreateToken(user.Id)
+	token, err := privateauth.CreateToken(user.Id)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +69,7 @@ func (svc *service) Login(user entities.User) (string, error) {
 		return "", errors.Wrap(err, "comparing hash and password")
 	}
 
-	token, err := auth.CreateToken(foundUser.Id)
+	token, err := privateauth.CreateToken(foundUser.Id)
 	if err != nil {
 		return "", err
 	}

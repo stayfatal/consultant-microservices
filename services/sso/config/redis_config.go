@@ -1,7 +1,7 @@
 package config
 
 import (
-	"cm/services/utils"
+	"cm/internal/utils"
 	"context"
 	"fmt"
 	"time"

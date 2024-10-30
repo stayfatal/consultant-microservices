@@ -1,6 +1,6 @@
 package models
 
-import "cm/services/entities"
+import "cm/internal/entities"
 
 type RegisterRequest struct {
 	User entities.User

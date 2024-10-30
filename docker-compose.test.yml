@@ -1,0 +1,56 @@
+networks:
+  dev:
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    networks:
+      - dev
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mypass
+      - POSTGRES_DB=prod_consultant_db
+    networks:
+      - dev
+
+  sso:
+    build:
+      context: .
+      dockerfile: dockerfile
+    command: ["go","run","/consultant-microservices/services/sso/cmd/app/main.go"]
+    ports:
+      - 8080:8080
+    networks:
+      - dev
+    depends_on:
+      - redis
+      - postgres
+
+  gatewayhttp:
+    build: 
+      context: .
+      dockerfile: dockerfile
+    command: ["go","run","/consultant-microservices/services/gateway/http/cmd/app/main.go"]
+    ports:
+      - 3000:3000
+    networks:
+      - dev
+    depends_on:
+      - sso
+
+  test:
+    build:
+      context: .
+      dockerfile: dockerfile
+    command: ["go","test","./..."]
+    networks:
+      - dev
+    depends_on:
+      - sso
