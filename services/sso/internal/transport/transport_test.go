@@ -10,9 +10,11 @@ import (
 	"cm/services/sso/internal/testhelpers"
 	transport "cm/services/sso/internal/transport/grpc"
 	"context"
+	"fmt"
 	"net"
 	"testing"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 
@@ -58,10 +60,9 @@ func TestRegister(t *testing.T) {
 	}
 	authClient := authpb.NewAuthenticationClient(conn)
 
-	// expectedId := 1
 	req := &authpb.RegisterRequest{
 		Name:         "test",
-		Email:        "test@testmail.com",
+		Email:        fmt.Sprintf("test%s@testmail.com", uuid.New().String()),
 		Password:     "123",
 		IsConsultant: false,
 	}
@@ -82,7 +83,7 @@ func TestRegister(t *testing.T) {
 
 	assert.NotNil(t, claims)
 
-	// assert.Equal(t, claims.Id, expectedId)
+	assert.Equal(t, req.Email, claims.Email)
 }
 
 func TestLogin(t *testing.T) {
@@ -123,7 +124,7 @@ func TestLogin(t *testing.T) {
 	}
 	authClient := authpb.NewAuthenticationClient(conn)
 
-	testEmail := "test@testmail.com"
+	testEmail := fmt.Sprintf("test%s@testmail.com", uuid.New().String())
 	testPass := "123"
 	expResp, err := authClient.Register(context.Background(), &authpb.RegisterRequest{
 		Name:         "test",
@@ -145,6 +146,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	assert.NotNil(t, gotClaims)
+	assert.Equal(t, testEmail, gotClaims.Email)
 
 	gotResp, err := authClient.Login(context.Background(), &authpb.LoginRequest{
 		Email:    testEmail,
@@ -164,5 +166,5 @@ func TestLogin(t *testing.T) {
 	}
 
 	assert.NotNil(t, expClaims)
-	// assert.Equal(t, expClaims.Id, gotClaims.Id)
+	assert.Equal(t, testEmail, expClaims.Email)
 }

@@ -5,9 +5,11 @@ import (
 	"cm/services/sso/internal/testhelpers"
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +24,7 @@ func TestSetUser(t *testing.T) {
 
 	expected := entities.User{
 		Name:         "test",
-		Email:        "test@testmail.com",
+		Email:        fmt.Sprintf("test%s@gmail.com", uuid.New().String()),
 		Password:     "123",
 		IsConsultant: false,
 	}
@@ -56,7 +58,7 @@ func TestGetUser(t *testing.T) {
 
 	expected := entities.User{
 		Name:         "test",
-		Email:        "test@testmail.com",
+		Email:        fmt.Sprintf("test%s@gmail.com", uuid.New().String()),
 		Password:     "123",
 		IsConsultant: false,
 	}

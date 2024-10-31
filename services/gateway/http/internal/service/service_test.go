@@ -3,60 +3,57 @@ package service
 import (
 	"cm/internal/entities"
 	"cm/internal/publicauth"
+	"fmt"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-var user = entities.User{
-	Name:         "test",
-	Email:        "servicetest@testmail.com",
-	Password:     "123",
-	IsConsultant: false,
-}
-
-func TestRegister(t *testing.T) {
+func TestRegisterAndLogin(t *testing.T) {
 	svc, err := New()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resp, err := svc.Register(user)
+	expected := entities.User{
+		Name:         "test",
+		Email:        fmt.Sprintf("test%s@gmail.com", uuid.New().String()),
+		Password:     "123",
+		IsConsultant: false,
+	}
+
+	regResp, err := svc.Register(expected)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotNil(t, resp)
+	assert.NotNil(t, regResp)
 
-	assert.Equal(t, resp.Error, "")
+	assert.Equal(t, regResp.Error, "")
 
-	claims, err := publicauth.ValidateToken(resp.Token)
+	regClaims, err := publicauth.ValidateToken(regResp.Token)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotNil(t, claims)
-}
+	assert.NotNil(t, regClaims)
+	assert.Equal(t, expected.Email, regClaims.Email)
 
-func TestLogin(t *testing.T) {
-	svc, err := New()
+	loginResp, err := svc.Login(expected)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resp, err := svc.Login(user)
+	assert.NotNil(t, loginResp)
+
+	assert.Equal(t, loginResp.Error, "")
+
+	loginClaims, err := publicauth.ValidateToken(loginResp.Token)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.NotNil(t, resp)
-
-	assert.Equal(t, resp.Error, "")
-
-	claims, err := publicauth.ValidateToken(resp.Token)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.NotNil(t, claims)
+	assert.NotNil(t, regClaims)
+	assert.Equal(t, expected.Email, loginClaims.Email)
 }

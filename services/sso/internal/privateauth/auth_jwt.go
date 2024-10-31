@@ -1,6 +1,7 @@
 package privateauth
 
 import (
+	"cm/internal/entities"
 	"cm/internal/publicauth"
 	"cm/internal/utils"
 
@@ -12,9 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CreateToken(id int) (string, error) {
+func CreateToken(user entities.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, publicauth.Claims{
-		Id: id,
+		Id:    user.Id,
+		Email: user.Email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},

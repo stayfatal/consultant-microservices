@@ -1,13 +1,20 @@
 package privateauth
 
 import (
+	"cm/internal/entities"
 	"cm/internal/publicauth"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
+var expected = entities.User{
+	Id:    4,
+	Email: "test@testmail.com",
+}
+
 func TestCreatingAndValidatingToken(t *testing.T) {
-	id := 5
-	token, err := CreateToken(id)
+	token, err := CreateToken(expected)
 	if err != nil {
 		t.Error(err)
 	}
@@ -17,11 +24,8 @@ func TestCreatingAndValidatingToken(t *testing.T) {
 		t.Error(err)
 	}
 
-	if claims == nil {
-		t.Fatal("expected not nill claims")
-	}
+	assert.NotNil(t, claims)
 
-	if claims.Id != id {
-		t.Fatalf("expected id: %d got: %d", id, claims.Id)
-	}
+	assert.Equal(t, expected.Id, claims.Id)
+	assert.Equal(t, expected.Email, claims.Email)
 }

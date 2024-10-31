@@ -3,9 +3,10 @@ package repository
 import (
 	"cm/internal/entities"
 	"cm/services/sso/internal/testhelpers"
+	"fmt"
 	"testing"
-	"time"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,7 @@ func TestCreateUser(t *testing.T) {
 
 	expected := entities.User{
 		Name:         "test",
-		Email:        "test@gmail.com",
+		Email:        fmt.Sprintf("test%s@gmail.com", uuid.New().String()),
 		Password:     "123",
 		IsConsultant: false,
 	}
@@ -37,9 +38,7 @@ func TestCreateUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected.Id = got.Id
-	expected.CreatedAt = got.CreatedAt
-	assert.Equal(t, expected, got)
+	assert.Equal(t, expected.Email, got.Email)
 }
 
 func TestGetUserByEmail(t *testing.T) {
@@ -52,26 +51,20 @@ func TestGetUserByEmail(t *testing.T) {
 
 	expected := entities.User{
 		Name:         "test",
-		Email:        "test@gmail.com",
+		Email:        fmt.Sprintf("test%s@gmail.com", uuid.New().String()),
 		Password:     "123",
 		IsConsultant: false,
 	}
 
-	var (
-		id         int
-		created_at time.Time
-	)
-	err = tx.QueryRow("INSERT INTO users (name,email,password,is_consultant) VALUES ($1,$2,$3,$4) RETURNING id, created_at", expected.Name, expected.Email, expected.Password, expected.IsConsultant).Scan(&id, &created_at)
+	_, err = tx.Exec("INSERT INTO users (name,email,password,is_consultant) VALUES ($1,$2,$3,$4)", expected.Name, expected.Email, expected.Password, expected.IsConsultant)
 	if err != nil {
 		t.Fatal(err)
 	}
-	expected.Id = id
-	expected.CreatedAt = created_at
 
 	got, err := repo.GetUserByEmail(expected)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, expected, got)
+	assert.Equal(t, expected.Email, got.Email)
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"cm/internal/entities"
 	"cm/internal/publicauth"
+	"fmt"
 
 	"cm/services/sso/internal/cache"
 	"cm/services/sso/internal/repository"
@@ -11,17 +12,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var expected = entities.User{
-	Name:         "test",
-	Email:        "test@testmail.com",
-	Password:     "123",
-	IsConsultant: false,
-}
 
 func TestRegister(t *testing.T) {
 	postgresDB, err := testhelpers.PreparePostgres(t)
@@ -39,6 +34,13 @@ func TestRegister(t *testing.T) {
 
 	svc := New(repo, cache)
 
+	expected := entities.User{
+		Name:         "test",
+		Email:        fmt.Sprintf("test%s@gmail.com", uuid.New().String()),
+		Password:     "123",
+		IsConsultant: false,
+	}
+
 	token, err := svc.Register(expected)
 	if err != nil {
 		t.Fatal(err)
@@ -50,6 +52,7 @@ func TestRegister(t *testing.T) {
 	}
 
 	assert.NotNil(t, claims)
+	assert.Equal(t, expected.Email, claims.Email)
 
 	gotFromPostgres := entities.User{}
 	err = postgresDB.Get(&gotFromPostgres, "SELECT * FROM users WHERE email = $1", expected.Email)
@@ -93,18 +96,21 @@ func TestLogin(t *testing.T) {
 
 	svc := New(repo, cache)
 
-	var (
-		id int
-	)
+	expected := entities.User{
+		Name:         "test",
+		Email:        fmt.Sprintf("test%s@gmail.com", uuid.New().String()),
+		Password:     "123",
+		IsConsultant: false,
+	}
+
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(expected.Password), bcrypt.DefaultCost)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = postgresDB.QueryRow("INSERT INTO users (name,email,password,is_consultant) VALUES ($1,$2,$3,$4) RETURNING id", expected.Name, expected.Email, hashedPass, expected.IsConsultant).Scan(&id)
+	_, err = postgresDB.Exec("INSERT INTO users (name,email,password,is_consultant) VALUES ($1,$2,$3,$4)", expected.Name, expected.Email, hashedPass, expected.IsConsultant)
 	if err != nil {
 		t.Fatal(err)
 	}
-	expected.Id = id
 
 	gotToken, err := svc.Login(expected)
 	if err != nil {
@@ -117,5 +123,5 @@ func TestLogin(t *testing.T) {
 	}
 
 	assert.NotNil(t, gotClaims)
-	// assert.Equal(t, expected.Id, gotClaims.Id)
+	assert.Equal(t, expected.Email, gotClaims.Email)
 }

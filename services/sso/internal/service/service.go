@@ -38,7 +38,7 @@ func (svc *service) Register(user entities.User) (string, error) {
 		return "", err
 	}
 
-	token, err := privateauth.CreateToken(user.Id)
+	token, err := privateauth.CreateToken(user)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +69,7 @@ func (svc *service) Login(user entities.User) (string, error) {
 		return "", errors.Wrap(err, "comparing hash and password")
 	}
 
-	token, err := privateauth.CreateToken(foundUser.Id)
+	token, err := privateauth.CreateToken(foundUser)
 	if err != nil {
 		return "", err
 	}
