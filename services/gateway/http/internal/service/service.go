@@ -3,8 +3,10 @@ package service
 import (
 	"cm/gen/authpb"
 	"cm/internal/entities"
+	"cm/services/gateway/http/config"
 	"cm/services/gateway/http/internal/interfaces"
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -14,8 +16,8 @@ type service struct {
 	client authpb.AuthenticationClient
 }
 
-func New() (interfaces.Service, error) {
-	client, err := grpc.NewClient("sso:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func New(cfg *config.ServiceConfig) (interfaces.Service, error) {
+	client, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.SsoHost, cfg.SsoPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

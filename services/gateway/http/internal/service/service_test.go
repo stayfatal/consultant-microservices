@@ -3,6 +3,7 @@ package service
 import (
 	"cm/internal/entities"
 	"cm/internal/publicauth"
+	"cm/services/gateway/http/config"
 	"fmt"
 	"testing"
 
@@ -11,7 +12,12 @@ import (
 )
 
 func TestRegisterAndLogin(t *testing.T) {
-	svc, err := New()
+	cfg, err := config.LoadServiceConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	svc, err := New(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}

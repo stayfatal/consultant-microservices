@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cm/internal/entities"
 	"cm/internal/publicauth"
+	"cm/services/gateway/http/config"
 	"cm/services/gateway/http/internal/models"
 	"cm/services/gateway/http/internal/service"
 	transport "cm/services/gateway/http/internal/transport/http"
@@ -18,14 +19,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRegister(t *testing.T) {
-	svc, err := service.New()
+func TestRegisterAndLogin(t *testing.T) {
+	cfg, err := config.LoadServiceConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	svc, err := service.New(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	srv := transport.NewGatewayServer(svc)
-	l, err := net.Listen("tcp", ":3000")
+	l, err := net.Listen("tcp", ":3005")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +52,7 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	regReq, err := http.NewRequest("POST", "http://gatewayhttp:3000/auth/register", bytes.NewBuffer(marshalledUser))
+	regReq, err := http.NewRequest("POST", "http://localhost:3005/auth/register", bytes.NewBuffer(marshalledUser))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +80,7 @@ func TestRegister(t *testing.T) {
 	assert.NotNil(t, regClaims)
 	assert.Equal(t, expected.Email, regClaims.Email)
 
-	loginReq, err := http.NewRequest("GET", "http://gatewayhttp:3000/auth/login", bytes.NewBuffer(marshalledUser))
+	loginReq, err := http.NewRequest("GET", "http://localhost:3005/auth/login", bytes.NewBuffer(marshalledUser))
 	if err != nil {
 		t.Fatal(err)
 	}

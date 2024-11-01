@@ -45,7 +45,7 @@ func TestRegister(t *testing.T) {
 
 	srv := grpc.NewServer()
 
-	l, err := net.Listen("tcp", ":8080")
+	l, err := net.Listen("tcp", ":5001")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestRegister(t *testing.T) {
 	authpb.RegisterAuthenticationServer(srv, authSrv)
 	go srv.Serve(l)
 
-	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("localhost:5001", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +109,7 @@ func TestLogin(t *testing.T) {
 
 	srv := grpc.NewServer()
 
-	l, err := net.Listen("tcp", ":8080")
+	l, err := net.Listen("tcp", ":5000")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestLogin(t *testing.T) {
 	authpb.RegisterAuthenticationServer(srv, authSrv)
 	go srv.Serve(l)
 
-	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("localhost:5000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatal(err)
 	}

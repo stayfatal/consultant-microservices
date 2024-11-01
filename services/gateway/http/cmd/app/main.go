@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cm/services/gateway/http/config"
 	"cm/services/gateway/http/internal/logger"
 	"cm/services/gateway/http/internal/service"
 	transport "cm/services/gateway/http/internal/transport/http"
@@ -10,7 +11,12 @@ import (
 func main() {
 	log := logger.New()
 
-	svc, err := service.New()
+	cfg, err := config.LoadServiceConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("")
+	}
+
+	svc, err := service.New(cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("")
 	}

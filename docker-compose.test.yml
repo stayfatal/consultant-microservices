@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   dev:
 
@@ -51,8 +49,9 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-    command: ["go","test","./..."]
+    command: ["go","test","-v","./..."]
     networks:
       - dev
     depends_on:
       - sso
+      - gatewayhttp
