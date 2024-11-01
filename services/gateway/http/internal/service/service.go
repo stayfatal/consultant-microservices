@@ -17,7 +17,7 @@ type service struct {
 }
 
 func New(cfg *config.ServiceConfig) (interfaces.Service, error) {
-	client, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.SsoHost, cfg.SsoPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.SSO_HOST, cfg.SSO_PORT), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

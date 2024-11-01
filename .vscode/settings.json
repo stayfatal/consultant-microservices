@@ -3,6 +3,7 @@
         "authpb",
         "dbname",
         "dbtest",
+        "finalizer",
         "gengrpc",
         "jmoiron",
         "kitgrpc",

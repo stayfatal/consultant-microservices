@@ -7,8 +7,8 @@ import (
 )
 
 type ServiceConfig struct {
-	SsoHost string
-	SsoPort int
+	SSO_HOST string
+	SSO_PORT int
 }
 
 func LoadServiceConfig() (*ServiceConfig, error) {
@@ -24,7 +24,7 @@ func LoadServiceConfig() (*ServiceConfig, error) {
 	}
 
 	return &ServiceConfig{
-		SsoHost: viper.GetString("SSO_HOST"),
-		SsoPort: viper.GetInt("SSO_PORT"),
+		SSO_HOST: viper.GetString("SSO_HOST"),
+		SSO_PORT: viper.GetInt("SSO_PORT"),
 	}, nil
 }

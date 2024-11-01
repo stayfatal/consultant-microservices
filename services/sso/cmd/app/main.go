@@ -2,9 +2,9 @@ package main
 
 import (
 	"cm/gen/authpb"
+	"cm/internal/log"
 	"cm/services/sso/config"
 	"cm/services/sso/internal/cache"
-	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/service"
 	transport "cm/services/sso/internal/transport/grpc"
@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	log := logger.New()
+	log := log.New()
 
 	postgresCfg, err := config.LoadPostgresConfig()
 	if err != nil {
@@ -39,6 +39,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed opening db")
 	}
+	defer db.Close()
 
 	cacheDB, err := config.NewRedisDb(redisCfg)
 	if err != nil {
@@ -59,6 +60,7 @@ func main() {
 	}
 
 	srv := grpc.NewServer()
+	defer srv.GracefulStop()
 
 	authpb.RegisterAuthenticationServer(srv, authServer)
 
@@ -80,6 +82,4 @@ func main() {
 	}()
 
 	<-exit
-	db.Close()
-	srv.GracefulStop()
 }

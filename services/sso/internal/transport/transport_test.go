@@ -2,9 +2,9 @@ package transport
 
 import (
 	"cm/gen/authpb"
+	"cm/internal/log"
 	"cm/internal/publicauth"
 	"cm/services/sso/internal/cache"
-	"cm/services/sso/internal/logger"
 	"cm/services/sso/internal/repository"
 	"cm/services/sso/internal/service"
 	"cm/services/sso/internal/testhelpers"
@@ -39,7 +39,7 @@ func TestRegister(t *testing.T) {
 
 	svc := service.New(repo, cache)
 
-	log := logger.New()
+	log := log.New()
 
 	authSrv := transport.NewGRPCServer(svc, log)
 
@@ -103,7 +103,7 @@ func TestLogin(t *testing.T) {
 
 	svc := service.New(repo, cache)
 
-	log := logger.New()
+	log := log.New()
 
 	authSrv := transport.NewGRPCServer(svc, log)
 

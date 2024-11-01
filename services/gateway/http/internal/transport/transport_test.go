@@ -3,6 +3,7 @@ package transport
 import (
 	"bytes"
 	"cm/internal/entities"
+	"cm/internal/log"
 	"cm/internal/publicauth"
 	"cm/services/gateway/http/config"
 	"cm/services/gateway/http/internal/models"
@@ -30,7 +31,8 @@ func TestRegisterAndLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	srv := transport.NewGatewayServer(svc)
+	logger := log.New()
+	srv := transport.NewGatewayServer(svc, logger)
 	l, err := net.Listen("tcp", ":3005")
 	if err != nil {
 		t.Fatal(err)

@@ -1,16 +1,27 @@
 package middlewares
 
 import (
-	customlog "cm/services/sso/internal/logger"
+	"cm/internal/log"
 	"context"
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
 	"google.golang.org/grpc"
 )
 
-func Logger(logger *customlog.Logger) endpoint.Middleware {
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rec *statusRecorder) WriteHeader(code int) {
+	rec.status = code
+	rec.ResponseWriter.WriteHeader(code)
+}
+
+func GrpcLogger(logger *log.Logger) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 			tStart := time.Now()
@@ -25,7 +36,7 @@ func Logger(logger *customlog.Logger) endpoint.Middleware {
 	}
 }
 
-func Recoverer(logger *customlog.Logger) endpoint.Middleware {
+func Recoverer(logger *log.Logger) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 			defer func() {

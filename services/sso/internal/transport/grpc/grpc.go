@@ -2,10 +2,10 @@ package transport
 
 import (
 	"cm/gen/authpb"
+	"cm/internal/log"
+	"cm/internal/middlewares"
 	"cm/services/sso/internal/endpoints"
 	"cm/services/sso/internal/interfaces"
-	"cm/services/sso/internal/logger"
-	"cm/services/sso/internal/middlewares"
 	"context"
 
 	"github.com/go-kit/kit/transport"
@@ -18,18 +18,18 @@ type AuthServer struct {
 	login    kitgrpc.Handler
 }
 
-func NewGRPCServer(svc interfaces.Service, logger *logger.Logger) *AuthServer {
+func NewGRPCServer(svc interfaces.Service, logger *log.Logger) *AuthServer {
 	ep := endpoints.MakeEndpoints(svc)
 
 	return &AuthServer{
 		register: kitgrpc.NewServer(
-			middlewares.CustomChain(logger)(ep.RegisterEndpoint),
+			middlewares.GrpcCustomChain(logger)(ep.RegisterEndpoint),
 			decodeRegisterRequest,
 			encodeRegisterResponse,
 			kitgrpc.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 		),
 		login: kitgrpc.NewServer(
-			middlewares.CustomChain(logger)(ep.LoginEndpoint),
+			middlewares.GrpcCustomChain(logger)(ep.LoginEndpoint),
 			decodeLoginRequest,
 			encodeLoginResponse,
 			kitgrpc.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
