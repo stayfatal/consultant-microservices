@@ -15,8 +15,9 @@ import (
 
 func CreateToken(user entities.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, publicauth.Claims{
-		Id:    user.Id,
-		Email: user.Email,
+		Id:           user.Id,
+		Email:        user.Email,
+		IsConsultant: user.IsConsultant,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},

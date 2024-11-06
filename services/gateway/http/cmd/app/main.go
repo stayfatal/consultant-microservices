@@ -6,7 +6,6 @@ import (
 	"cm/services/gateway/http/internal/service"
 	transport "cm/services/gateway/http/internal/transport/http"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -33,16 +32,10 @@ func main() {
 
 	srv := transport.NewGatewayServer(svc, logger)
 
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", serverCfg.PORT))
-	if err != nil {
-		logger.Fatal().Err(err).Msg("")
-	}
-	defer l.Close()
-
 	quit := make(chan struct{})
 	go func() {
 		logger.Info().Msgf("Server is now listening on port: %d", serverCfg.PORT)
-		if err := http.Serve(l, srv); err != nil {
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", serverCfg.PORT), srv); err != nil {
 			logger.Error().Err(err).Msg("")
 			quit <- struct{}{}
 		}

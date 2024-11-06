@@ -15,8 +15,9 @@ var (
 )
 
 type Claims struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
+	Id           int    `json:"id"`
+	Email        string `json:"email"`
+	IsConsultant bool   `json:"is_consultant"`
 	jwt.StandardClaims
 }
 

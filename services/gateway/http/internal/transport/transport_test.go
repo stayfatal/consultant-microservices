@@ -11,7 +11,6 @@ import (
 	transport "cm/services/gateway/http/internal/transport/http"
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"testing"
 	"time"
@@ -33,12 +32,8 @@ func TestRegisterAndLogin(t *testing.T) {
 
 	logger := log.New()
 	srv := transport.NewGatewayServer(svc, logger)
-	l, err := net.Listen("tcp", ":3005")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer l.Close()
-	go http.Serve(l, srv)
+
+	go http.ListenAndServe(":3005", srv)
 
 	client := &http.Client{Timeout: time.Second}
 
