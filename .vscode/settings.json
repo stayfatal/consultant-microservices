@@ -18,5 +18,6 @@
         "sslmode",
         "testhelpers",
         "Wrapf"
-    ]
+    ],
+    "makefile.configureOnOpen": false
 }

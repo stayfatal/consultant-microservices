@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "cm/get/chatpb;chatpb";
+
+service Chat {
+    rpc AddConsultant (AddConsultantRequest) returns (AddConsultantResponse){}
+}
+
+message AddConsultantRequest{
+    int32 id = 1;
+    string email = 2;
+}
+
+message AddConsultantResponse{
+    string error = 1;
+}

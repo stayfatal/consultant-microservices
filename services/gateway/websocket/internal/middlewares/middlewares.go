@@ -22,7 +22,7 @@ func Authenticator() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user", entities.User{Id: claims.Id, Email: claims.Email})
+		c.Set("user", entities.User{Id: claims.Id, Email: claims.Email, IsConsultant: claims.IsConsultant})
 
 		c.Next()
 	}
