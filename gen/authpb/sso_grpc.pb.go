@@ -32,7 +32,7 @@ func NewAuthenticationClient(cc grpc.ClientConnInterface) AuthenticationClient {
 
 func (c *authenticationClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
 	out := new(RegisterResponse)
-	err := c.cc.Invoke(ctx, "/task.Authentication/Register", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sso.Authentication/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (c *authenticationClient) Register(ctx context.Context, in *RegisterRequest
 
 func (c *authenticationClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
 	out := new(LoginResponse)
-	err := c.cc.Invoke(ctx, "/task.Authentication/Login", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sso.Authentication/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func _Authentication_Register_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/task.Authentication/Register",
+		FullMethod: "/sso.Authentication/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthenticationServer).Register(ctx, req.(*RegisterRequest))
@@ -108,7 +108,7 @@ func _Authentication_Login_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/task.Authentication/Login",
+		FullMethod: "/sso.Authentication/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthenticationServer).Login(ctx, req.(*LoginRequest))
@@ -120,7 +120,7 @@ func _Authentication_Login_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Authentication_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "task.Authentication",
+	ServiceName: "sso.Authentication",
 	HandlerType: (*AuthenticationServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

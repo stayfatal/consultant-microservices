@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package chat;
 
-option go_package = "cm/get/chatpb;chatpb";
+option go_package = "gen/chatpb;chatpb";
 
 service Chat {
     rpc AddConsultant (AddConsultantRequest) returns (AddConsultantResponse){}
