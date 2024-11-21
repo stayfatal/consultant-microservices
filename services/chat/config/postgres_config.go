@@ -56,12 +56,24 @@ func NewPostgresDb(cfg *PostgresConfig) (*sqlx.DB, error) {
 	}
 
 	//need to be deleted asap
-	table := `CREATE TABLE IF NOT EXISTS consultants(
+	table1 := `CREATE TABLE IF NOT EXISTS chats(
 		id SERIAL PRIMARY KEY,
-		consultant_id VARCHAR(255) NOT NULL UNIQUE,
-		status BOOLEAN,
+		consultant_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		UNIQUE(consultant_id,user_id)
 	);`
-	_, err = db.Exec(table)
+	_, err = db.Exec(table1)
+	if err != nil {
+		return nil, err
+	}
+
+	table2 := `CREATE TABLE IF NOT EXISTS messages(
+		id SERIAL PRIMARY KEY,
+		chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		message TEXT
+	);`
+	_, err = db.Exec(table2)
 	if err != nil {
 		return nil, err
 	}

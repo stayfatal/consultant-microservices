@@ -13,16 +13,17 @@ import (
 )
 
 type service struct {
-	client authpb.AuthenticationClient
+	clientConn *grpc.ClientConn
+	client     authpb.AuthenticationClient
 }
 
 func New(cfg *config.ServiceConfig) (interfaces.Service, error) {
-	client, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.SSO_HOST, cfg.SSO_PORT), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	clientConn, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.SSO_HOST, cfg.SSO_PORT), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
 
-	return &service{client: authpb.NewAuthenticationClient(client)}, nil
+	return &service{client: authpb.NewAuthenticationClient(clientConn), clientConn: clientConn}, nil
 }
 
 func (s *service) Register(user entities.User) (*authpb.RegisterResponse, error) {
@@ -39,4 +40,8 @@ func (s *service) Login(user entities.User) (*authpb.LoginResponse, error) {
 		Email:    user.Email,
 		Password: user.Password,
 	})
+}
+
+func (s *service) GratefulStop() {
+	s.clientConn.Close()
 }

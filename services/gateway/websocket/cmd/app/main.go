@@ -15,12 +15,21 @@ import (
 
 func main() {
 	logger := log.New()
-	cfg, err := config.LoadServerConfig()
+	serverCfg, err := config.LoadServerConfig()
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
 
-	svc := service.New()
+	serviceCfg, err := config.LoadServiceConfig()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
+	}
+
+	svc, err := service.New(serviceCfg)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("")
+	}
+	defer svc.GratefulStop()
 
 	hm := handlers.NewManager(logger, svc)
 
@@ -28,8 +37,8 @@ func main() {
 
 	quit := make(chan struct{})
 	go func() {
-		logger.Info().Msgf("Server is now listening on port: %d", cfg.PORT)
-		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.PORT), r); err != nil {
+		logger.Info().Msgf("Server is now listening on port: %d", serverCfg.PORT)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", serverCfg.PORT), r); err != nil {
 			logger.Fatal().Err(err).Msg("")
 			quit <- struct{}{}
 		}

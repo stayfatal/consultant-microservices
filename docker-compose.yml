@@ -44,3 +44,29 @@ services:
       - dev
     depends_on:
       - sso
+
+  gatewaywebsocket:
+    build: 
+      context: .
+      dockerfile: dockerfile
+    command: ["go","run","/consultant-microservices/services/gateway/websocket/cmd/app/main.go"]
+    ports:
+      - 2955:2955
+    networks:
+      - dev
+    depends_on:
+      - sso
+      - chat
+
+  chat:
+    build:
+      context: .
+      dockerfile: dockerfile
+    command: ["go","run","/consultant-microservices/services/chat/cmd/app/main.go"]
+    ports:
+      - 8052:8052
+    networks:
+      - dev
+    depends_on:
+      - sso
+      - gatewayhttp

@@ -1,9 +1,12 @@
 package interfaces
 
+import "cm/internal/entities"
+
 type Service interface {
-	AddConsultant()
+	AddConsultant(user entities.User)
 }
 
 type Repository interface {
-	CreateConsultant()
+	CreateChat(chat entities.Chat) (id int, err error)
+	SaveMessage(message entities.Message) error
 }

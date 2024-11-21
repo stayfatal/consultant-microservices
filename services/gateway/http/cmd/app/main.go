@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
+	defer svc.GratefulStop()
 
 	serverCfg, err := config.LoadServerConfig()
 	if err != nil {
