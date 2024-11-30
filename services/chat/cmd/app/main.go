@@ -18,34 +18,34 @@ import (
 
 func main() {
 	logger := log.New()
-	logErr := func(err error) {
-		logger.Fatal().Err(err).Msg("")
-	}
 
 	postgresCfg, err := config.LoadPostgresConfig()
 	if err != nil {
-		logErr(err)
+		logger.LogFatal(err)
 	}
 
 	db, err := config.NewPostgresDb(postgresCfg)
 	if err != nil {
-		logErr(err)
+		logger.LogFatal(err)
 	}
 
 	repo := repository.New(db)
 
-	svc := service.New(repo)
+	svc, err := service.New(repo, logger)
+	if err != nil {
+		logger.LogFatal(err)
+	}
 
 	chatServer := transport.NewGrpcServer(svc, logger)
 
 	serverCfg, err := config.LoadServerConfig()
 	if err != nil {
-		logErr(err)
+		logger.LogFatal(err)
 	}
 
 	l, err := net.Listen("tcp", fmt.Sprint(":", serverCfg.PORT))
 	if err != nil {
-		logErr(err)
+		logger.LogFatal(err)
 	}
 
 	srv := grpc.NewServer()

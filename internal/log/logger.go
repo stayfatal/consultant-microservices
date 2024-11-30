@@ -13,8 +13,18 @@ type Logger struct {
 }
 
 func (cl *Logger) Log(args ...interface{}) error {
-	cl.Error().Stack().Err(args[1].(error)).Msg("")
+	var err interface{}
+	if len(args) > 1 {
+		err = args[1]
+	} else {
+		err = args[0]
+	}
+	cl.Error().Stack().Err(err.(error)).Msg("")
 	return nil
+}
+
+func (cl *Logger) LogFatal(err error) {
+	cl.Fatal().Stack().Err(err).Msg("")
 }
 
 func New() *Logger {

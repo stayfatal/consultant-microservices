@@ -48,9 +48,19 @@ func (hm *HandlersManager) QuestionHandler(c *gin.Context) {
 	}
 
 	if user.IsConsultant {
-		hm.svc.StartAnsweringQuestions(conn, user)
+		err := hm.svc.AddConsultant(conn, user)
+		if err != nil {
+			c.String(http.StatusInternalServerError, TypeAssertingError.Error())
+			hm.logger.Log(err)
+			return
+		}
 	} else {
-		hm.svc.StartAskingQuestions(conn, user)
+		err := hm.svc.AddUser(conn, user)
+		if err != nil {
+			c.String(http.StatusInternalServerError, TypeAssertingError.Error())
+			hm.logger.Log(err)
+			return
+		}
 	}
 
 	c.Status(http.StatusOK)

@@ -20,6 +20,14 @@ services:
     networks:
       - dev
 
+  rabbit:
+    image: rabbitmq:3
+    ports:
+      - 5672:5672
+    networks:
+      - dev
+
+
   sso:
     build:
       context: .
@@ -56,7 +64,7 @@ services:
       - dev
     depends_on:
       - sso
-      - chat
+      - rabbit
 
   chat:
     build:
@@ -70,3 +78,5 @@ services:
     depends_on:
       - sso
       - gatewayhttp
+      - gatewaywebsocket
+      - rabbit

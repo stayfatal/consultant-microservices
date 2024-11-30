@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	StartAskingQuestions(conn net.Conn, user entities.User)
-	StartAnsweringQuestions(conn net.Conn, user entities.User) error
+	AddUser(conn net.Conn, user entities.User) error
+	AddConsultant(conn net.Conn, user entities.User) error
 	GratefulStop()
 }
