@@ -26,7 +26,6 @@ func NewGrpcServer(svc interfaces.Service, logger *log.Logger) chatpb.ChatServer
 }
 
 func (sa *serverApi) AddConsultant(ctx context.Context, request *chatpb.AddConsultantRequest) (*chatpb.AddConsultantResponse, error) {
-	log.New().Info().Msg("invoked")
 	_, resp, err := sa.addConsultant.ServeGRPC(ctx, request)
 	if err != nil {
 		return nil, err

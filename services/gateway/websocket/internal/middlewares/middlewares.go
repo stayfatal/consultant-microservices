@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func Authenticator() gin.HandlerFunc {
@@ -24,6 +25,16 @@ func Authenticator() gin.HandlerFunc {
 
 		c.Set("user", entities.User{Id: claims.Id, Email: claims.Email, IsConsultant: claims.IsConsultant})
 
+		c.Next()
+	}
+}
+
+func IpWhiteList(whiteList map[string]struct{}) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if _, ok := whiteList[c.ClientIP()]; !ok {
+			log.Warn().Msgf("Blocked IP: %s", c.ClientIP())
+			c.AbortWithStatus(http.StatusForbidden)
+		}
 		c.Next()
 	}
 }

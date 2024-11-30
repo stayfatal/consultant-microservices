@@ -1,11 +1,14 @@
 package service
 
 import (
+	"bytes"
 	"cm/internal/entities"
 	"cm/internal/log"
 	"cm/services/chat/internal/interfaces"
 	"encoding/json"
-	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"time"
 
 	"sync"
@@ -30,6 +33,17 @@ func New(repo interfaces.Repository, logger *log.Logger) (interfaces.Service, er
 	return svc, nil
 }
 
+func (s *service) AddConsultant(user entities.User) {
+	s.mu.Lock()
+	s.consultants = append(s.consultants, user)
+	s.mu.Unlock()
+}
+
+func (s *service) GratefulStop() {
+	s.rabbit.ch.Close()
+	s.rabbit.conn.Close()
+}
+
 func (s *service) startService() {
 	msgs, err := s.rabbit.ch.Consume(
 		s.rabbit.q.Name, // queue
@@ -52,26 +66,44 @@ func (s *service) startService() {
 					continue
 				}
 
-				s.startChat(entities.Chat{
+				err := s.startChat(entities.Chat{
 					ConsultantId: s.consultants[0].Id,
 					UserId:       user.Id,
 				})
+				if err != nil {
+					s.logger.Log(err)
+					continue
+				}
 
-				s.consultants = s.consultants[1:]
-
-				fmt.Println(user)
+				s.popConsultantFromQueue()
 			}
 		}
 	}()
 }
 
-func (s *service) startChat(chat entities.Chat) {
+func (s *service) startChat(chat entities.Chat) error {
+	bChat, err := json.Marshal(chat)
+	if err != nil {
+		s.logger.Log(err)
+		return err
+	}
 
+	buf := bytes.NewBuffer(bChat)
+	resp, err := http.Post("http://gatewaywebsocket:2955/chat", "application/json", buf)
+	if err != nil {
+		s.logger.Log(err)
+		return err
+	}
+
+	_, err = io.Copy(os.Stderr, resp.Body)
+	if err != nil {
+		s.logger.Log(err)
+	}
+	return nil
 }
 
-func (svc *service) AddConsultant(user entities.User) {
-	svc.mu.Lock()
-	svc.consultants = append(svc.consultants, user)
-	svc.mu.Unlock()
-	log.New().Println(svc.consultants)
+func (s *service) popConsultantFromQueue() {
+	s.mu.Lock()
+	s.consultants = s.consultants[1:]
+	s.mu.Unlock()
 }

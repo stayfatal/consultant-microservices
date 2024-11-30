@@ -25,7 +25,7 @@ func NewManager(logger *log.Logger, svc interfaces.Service) *HandlersManager {
 	return &HandlersManager{logger, svc}
 }
 
-func (hm *HandlersManager) QuestionHandler(c *gin.Context) {
+func (hm *HandlersManager) WebsocketChatHandler(c *gin.Context) {
 	conn, _, _, err := ws.UpgradeHTTP(c.Request, c.Writer)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -64,4 +64,21 @@ func (hm *HandlersManager) QuestionHandler(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func (hm *HandlersManager) ChatHandler(c *gin.Context) {
+	chat := entities.Chat{}
+	err := c.BindJSON(&chat)
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		hm.logger.Log(err)
+		return
+	}
+
+	if err := hm.svc.StartChat(chat); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		hm.logger.Log(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }

@@ -25,7 +25,7 @@ func main() {
 		logger.Fatal().Err(err).Msg("")
 	}
 
-	svc, err := service.New(serviceCfg)
+	svc, err := service.New(serviceCfg, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
