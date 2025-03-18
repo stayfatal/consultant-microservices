@@ -3,9 +3,8 @@ package main
 import (
 	"cm/libs/config"
 	"cm/libs/log"
-	"cm/services/chat/internal/handlers"
-	"cm/services/chat/internal/router"
-	"cm/services/chat/internal/service"
+	"cm/services/gateway/internal/service"
+	transport "cm/services/gateway/internal/transport/http"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,21 +20,19 @@ func main() {
 		logger.Fatal().Err(err).Msg("")
 	}
 
-	svc, err := service.New(cfg, logger)
+	svc, err := service.New(cfg)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("")
 	}
 	defer svc.GratefulStop()
 
-	hm := handlers.NewManager(logger, svc)
-
-	r := router.NewRouter(hm)
+	srv := transport.NewGatewayServer(svc, logger)
 
 	quit := make(chan struct{})
 	go func() {
-		logger.Info().Msgf("Server is now listening on port: %s", cfg.Chat.Port)
-		if err := http.ListenAndServe(fmt.Sprintf(":%s", cfg.Chat.Port), r); err != nil {
-			logger.Fatal().Err(err).Msg("")
+		logger.Info().Msgf("Server is now listening on port: %s", cfg.Gateway.Port)
+		if err := http.ListenAndServe(fmt.Sprintf(":%s", cfg.Gateway.Port), srv); err != nil {
+			logger.Error().Err(err).Msg("")
 			quit <- struct{}{}
 		}
 	}()

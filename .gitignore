@@ -1,0 +1,4 @@
+.stfolder
+.vscode
+config.env
+*.pem

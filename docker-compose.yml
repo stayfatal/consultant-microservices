@@ -8,17 +8,27 @@ services:
       - 6379:6379
     networks:
       - dev
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
 
   postgres:
     image: postgres:latest
     ports:
       - 5432:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=mypass
-      - POSTGRES_DB=prod_consultant_db
+    env_file:
+      - config.env
     networks:
       - dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/postgresql/data
 
   rabbit:
     image: rabbitmq:3
@@ -26,57 +36,82 @@ services:
       - 5672:5672
     networks:
       - dev
+    healthcheck:
+      test: ["CMD-SHELL","rabbitmqctl status"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
 
-  sso:
+  auth:
     build:
-      context: .
-      dockerfile: dockerfile
-    command: ["go","run","/consultant-microservices/services/sso/cmd/app/main.go"]
+      target: auth
     ports:
-      - 8080:8080
+      - 8030:8030
     networks:
       - dev
+    env_file:
+      - config.env
     depends_on:
-      - redis
-      - postgres
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
 
-  gatewayhttp:
+  gateway:
     build: 
-      context: .
-      dockerfile: dockerfile
-    command: ["go","run","/consultant-microservices/services/gateway/http/cmd/app/main.go"]
+      target: gateway
     ports:
-      - 3000:3000
+      - 8020:8020
     networks:
       - dev
-    depends_on:
-      - sso
-
-  gatewaywebsocket:
-    build: 
-      context: .
-      dockerfile: dockerfile
-    command: ["go","run","/consultant-microservices/services/gateway/websocket/cmd/app/main.go"]
-    ports:
-      - 2955:2955
-    networks:
-      - dev
-    depends_on:
-      - sso
-      - rabbit
+    env_file:
+      - config.env
 
   chat:
-    build:
-      context: .
-      dockerfile: dockerfile
-    command: ["go","run","/consultant-microservices/services/chat/cmd/app/main.go"]
+    build: 
+      target: chat
     ports:
-      - 8052:8052
+      - 8000:8000
+    networks:
+      - dev
+    env_file:
+      - config.env
+    depends_on:
+      rabbit:
+        condition: service_healthy
+
+  matchmaking:
+    build:
+      target: matchmaking
+    ports:
+      - 8010:8010
+    env_file:
+      - config.env
     networks:
       - dev
     depends_on:
-      - sso
-      - gatewayhttp
-      - gatewaywebsocket
-      - rabbit
+      rabbit:
+        condition: service_healthy
+
+  migrations:
+    image: migrate/migrate
+    entrypoint: 
+      - "migrate"
+      - "-path"
+      - "/migrations"
+      - "-database"
+      - "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=${POSTGRES_SSL_MODE}"
+      - "up"
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - config.env
+    networks:
+      - dev
+
+volumes:
+  db-data:

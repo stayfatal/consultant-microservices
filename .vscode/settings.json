@@ -18,7 +18,8 @@
         "sqlx",
         "sslmode",
         "testhelpers",
-        "Wrapf"
+        "Wrapf",
+        "bebr"
     ],
     "makefile.configureOnOpen": false
 }
